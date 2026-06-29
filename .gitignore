@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+build/
+**/build/
+out/
+coverage/
+.turbo/
+**/.turbo/
+.cache/
+**/.cache/
+.vite/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Secrets / certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# Database / backup files
+*.sql
+*.dump
+*.backup
+*.bak
+*.bak-*
+*.tmp
+
+# Archives / generated bundles
+*.zip
+*.tgz
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.sha256
+
+# PM Platform temporary patch artifacts
+.hotfix-backups/
+**/.hotfix-backups/
+.feature-pack-*/
+.feature-pack-backups/
+pm-platform-feature-pack-*
+pm-platform-hotfix-*
+pm-platform-current-audit-*
+pm-platform-source-audit*
+pm-platform-audit-logs*
+pm-platform-checkpoint-*
+pm-platform-monorepo*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
