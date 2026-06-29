@@ -118,3 +118,18 @@ Verified through:
 - scripts/smoke-uc04-07-org-projects.sh
 - Project list create-project UI
 - Project settings general/member/workflow UI
+
+## Checkpoint — UC-04 to UC-07 Organization / Project / Member Completion
+
+Status:
+
+- UC-04 Create/manage organisation baseline: DONE-RUNTIME
+- UC-05 Create project with default issue types and workflow: DONE-RUNTIME
+- UC-06 Invite team members / add existing org users: DONE-RUNTIME
+- UC-07 Assign project roles and remove members with owner protection: DONE-RUNTIME
+
+Verified through:
+
+- scripts/smoke-uc04-07-org-projects.sh
+- Project list create-project UI
+- Project settings general/member/workflow UI
