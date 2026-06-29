@@ -1,0 +1,888 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_DIRECT_URL")
+}
+
+enum GlobalRole {
+  SUPER_ADMIN
+  ADMIN
+  MEMBER
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum SpaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum FieldType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  DATE
+  DATETIME
+  DROPDOWN
+  MULTISELECT
+  USER
+  CHECKBOX
+  URL
+}
+
+enum StatusCategory {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum GuardType {
+  REQUIRED_FIELD
+  ASSIGNEE_SET
+  PERMISSION
+}
+
+enum PostFnType {
+  AUTO_ASSIGN
+  AUTO_LABEL
+  AUTO_NOTIFY
+  SET_FIELD
+  MOVE_TO_SPRINT
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  NONE
+}
+
+enum LinkType {
+  BLOCKS
+  BLOCKED_BY
+  DUPLICATES
+  DUPLICATED_BY
+  RELATES_TO
+  CLONES
+}
+
+enum SprintStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum VersionStatus {
+  UNRELEASED
+  RELEASED
+  ARCHIVED
+}
+
+enum TimerStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum PeriodType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  SPRINT
+  QUARTERLY
+}
+
+enum NotificationType {
+  ISSUE_ASSIGNED
+  ISSUE_UPDATED
+  ISSUE_COMMENTED
+  ISSUE_MENTIONED
+  SPRINT_STARTED
+  SPRINT_COMPLETED
+  PAGE_UPDATED
+  PAGE_MENTIONED
+}
+
+enum SpaceType {
+  TEAM
+  PROJECT
+  PERSONAL
+}
+
+enum RestrictionType {
+  VIEW
+  EDIT
+}
+
+model Organization {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String       @unique
+  logoUrl     String?
+  settings    Json         @default("{}")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       User[]
+  projects    Project[]
+  invitations Invitation[]
+  spaces      Space[]
+  auditLogs   AuditLog[]
+  apiKeys     ApiKey[]
+}
+
+model User {
+  id                     String                @id @default(uuid()) @db.Uuid
+  orgId                  String                @db.Uuid
+  email                  String                @unique
+  passwordHash           String
+  name                   String
+  avatarUrl              String?
+  role                   GlobalRole            @default(MEMBER)
+  isActive               Boolean               @default(true)
+  lastLoginAt            DateTime?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  org                    Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  refreshTokens          RefreshToken[]
+  emailVerifications     EmailVerification[]
+  passwordResets         PasswordReset[]
+  projectLeads           Project[]             @relation("ProjectLead")
+  projectMemberships     ProjectMember[]
+  invitationsSent        Invitation[]          @relation("InvitationInviter")
+  reportedIssues         Issue[]               @relation("IssueReporter")
+  assignedIssues         Issue[]               @relation("IssueAssignee")
+  createdIssueLinks      IssueLink[]
+  issueWatchers          IssueWatcher[]
+  issueHistory           IssueHistory[]
+  comments               Comment[]
+  mentions               Mention[]
+  attachments            Attachment[]
+  worklogs               Worklog[]
+  timerSessions          TimerSession[]
+  performanceSnapshots   PerformanceSnapshot[]
+  notifications          Notification[]
+  notificationPrefs      NotificationPref[]
+  spacesOwned            Space[]               @relation("SpaceOwner")
+  spaceMemberships       SpaceMember[]
+  pagesCreated           Page[]                @relation("PageCreatedBy")
+  pagesUpdated           Page[]                @relation("PageUpdatedBy")
+  pageVersions           PageVersion[]
+  pageRestrictions       PageRestriction[]
+  pageComments           PageComment[]
+  pageWatches            PageWatch[]
+  auditLogs              AuditLog[]
+  apiKeys                ApiKey[]
+  savedFilters           SavedFilter[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id                   String                @id @default(uuid()) @db.Uuid
+  orgId                String                @db.Uuid
+  name                 String
+  key                  String
+  description          String?
+  iconUrl              String?
+  leadId               String                @db.Uuid
+  settings             Json                  @default("{}")
+  isArchived           Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  org                  Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lead                 User                  @relation("ProjectLead", fields: [leadId], references: [id], onDelete: Restrict)
+  members              ProjectMember[]
+  invitations          Invitation[]
+  issueTypes           IssueType[]
+  customFields         CustomField[]
+  workflows            Workflow[]
+  issues               Issue[]
+  labels               Label[]
+  sprints              Sprint[]
+  versions             Version[]
+  performanceSnapshots PerformanceSnapshot[]
+  webhooks             WebhookConfig[]
+  savedFilters         SavedFilter[]
+
+  @@unique([orgId, key])
+}
+
+model ProjectMember {
+  id        String      @id @default(uuid()) @db.Uuid
+  projectId String      @db.Uuid
+  userId    String      @db.Uuid
+  role      ProjectRole @default(MEMBER)
+  createdAt DateTime    @default(now())
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Invitation {
+  id          String       @id @default(uuid()) @db.Uuid
+  orgId       String       @db.Uuid
+  projectId   String?      @db.Uuid
+  email       String
+  role        ProjectRole  @default(MEMBER)
+  token       String       @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String       @db.Uuid
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  invitedBy   User         @relation("InvitationInviter", fields: [invitedById], references: [id], onDelete: Restrict)
+}
+
+model IssueType {
+  id        String           @id @default(uuid()) @db.Uuid
+  projectId String           @db.Uuid
+  name      String
+  color     String           @default("#64748b")
+  icon      String           @default("circle")
+  isDefault Boolean          @default(false)
+  position  Float            @default(0)
+  createdAt DateTime         @default(now())
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fields    IssueTypeField[]
+  issues    Issue[]
+
+  @@unique([projectId, name])
+}
+
+model CustomField {
+  id              String             @id @default(uuid()) @db.Uuid
+  projectId       String             @db.Uuid
+  name            String
+  key             String
+  type            FieldType
+  options         Json               @default("[]")
+  isRequired      Boolean            @default(false)
+  position        Float              @default(0)
+  createdAt       DateTime           @default(now())
+  project         Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issueTypeFields IssueTypeField[]
+  values          CustomFieldValue[]
+  guards          TransitionGuard[]
+
+  @@unique([projectId, key])
+}
+
+model IssueTypeField {
+  id            String      @id @default(uuid()) @db.Uuid
+  issueTypeId   String      @db.Uuid
+  customFieldId String      @db.Uuid
+  isRequired    Boolean     @default(false)
+  position      Float       @default(0)
+  issueType     IssueType   @relation(fields: [issueTypeId], references: [id], onDelete: Cascade)
+  customField   CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([issueTypeId, customFieldId])
+}
+
+model Workflow {
+  id          String               @id @default(uuid()) @db.Uuid
+  projectId   String               @db.Uuid
+  name        String
+  isDefault   Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  statuses    WorkflowStatus[]
+  transitions WorkflowTransition[]
+
+  @@unique([projectId, name])
+}
+
+model WorkflowStatus {
+  id              String               @id @default(uuid()) @db.Uuid
+  workflowId      String               @db.Uuid
+  name            String
+  color           String               @default("#64748b")
+  category        StatusCategory       @default(TODO)
+  position        Float                @default(0)
+  wipLimit        Int?
+  createdAt       DateTime             @default(now())
+  workflow        Workflow             @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  transitionsFrom WorkflowTransition[] @relation("TransitionFrom")
+  transitionsTo   WorkflowTransition[] @relation("TransitionTo")
+  issues          Issue[]
+
+  @@unique([workflowId, name])
+}
+
+model WorkflowTransition {
+  id           String             @id @default(uuid()) @db.Uuid
+  workflowId   String             @db.Uuid
+  fromStatusId String             @db.Uuid
+  toStatusId   String             @db.Uuid
+  name         String
+  workflow     Workflow           @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fromStatus   WorkflowStatus     @relation("TransitionFrom", fields: [fromStatusId], references: [id], onDelete: Cascade)
+  toStatus     WorkflowStatus     @relation("TransitionTo", fields: [toStatusId], references: [id], onDelete: Cascade)
+  guards       TransitionGuard[]
+  postFns      TransitionPostFn[]
+
+  @@unique([workflowId, fromStatusId, toStatusId])
+}
+
+model TransitionGuard {
+  id           String             @id @default(uuid()) @db.Uuid
+  transitionId String             @db.Uuid
+  type         GuardType
+  fieldId      String?            @db.Uuid
+  config       Json               @default("{}")
+  transition   WorkflowTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
+  field        CustomField?       @relation(fields: [fieldId], references: [id], onDelete: SetNull)
+}
+
+model TransitionPostFn {
+  id           String             @id @default(uuid()) @db.Uuid
+  transitionId String             @db.Uuid
+  type         PostFnType
+  config       Json               @default("{}")
+  position     Float              @default(0)
+  transition   WorkflowTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
+}
+
+model Issue {
+  id                  String             @id @default(uuid()) @db.Uuid
+  key                 String             @unique
+  number              Int
+  projectId           String             @db.Uuid
+  issueTypeId         String             @db.Uuid
+  workflowStatusId    String             @db.Uuid
+  title               String
+  description         String?            @db.Text
+  priority            Priority           @default(MEDIUM)
+  reporterId          String             @db.Uuid
+  assigneeId          String?            @db.Uuid
+  parentId            String?            @db.Uuid
+  sprintId            String?            @db.Uuid
+  versionId           String?            @db.Uuid
+  storyPoints         Int?
+  originalEstimate    Int?
+  remainingEstimate   Int?
+  dueDate             DateTime?
+  resolvedAt          DateTime?
+  position            Float              @default(0)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  project             Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issueType           IssueType          @relation(fields: [issueTypeId], references: [id], onDelete: Restrict)
+  workflowStatus      WorkflowStatus     @relation(fields: [workflowStatusId], references: [id], onDelete: Restrict)
+  reporter            User               @relation("IssueReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+  assignee            User?              @relation("IssueAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  parent              Issue?             @relation("IssueSubTasks", fields: [parentId], references: [id], onDelete: Cascade)
+  children            Issue[]            @relation("IssueSubTasks")
+  sprint              Sprint?            @relation("IssueSprint", fields: [sprintId], references: [id], onDelete: SetNull)
+  version             Version?           @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  sourceLinks         IssueLink[]        @relation("IssueLinkSource")
+  targetLinks         IssueLink[]        @relation("IssueLinkTarget")
+  labels              IssueLabel[]
+  customFieldValues   CustomFieldValue[]
+  watchers            IssueWatcher[]
+  histories           IssueHistory[]
+  comments            Comment[]
+  attachments         Attachment[]
+  sprintIssues        SprintIssue[]
+  worklogs            Worklog[]
+  timerSessions       TimerSession[]
+
+  @@unique([projectId, number])
+  /// Speeds board column queries by project and status.
+  @@index([projectId, workflowStatusId])
+  /// Speeds personal assignment dashboards and issue filtering.
+  @@index([projectId, assigneeId])
+  /// Speeds sprint board and backlog partitioning.
+  @@index([projectId, sprintId])
+  /// Speeds priority filters and reports.
+  @@index([projectId, priority])
+  /// Speeds recency sorting in issue list views.
+  @@index([projectId, createdAt])
+  /// Speeds sub-task tree traversal.
+  @@index([parentId])
+}
+
+model IssueLink {
+  id            String   @id @default(uuid()) @db.Uuid
+  sourceIssueId String   @db.Uuid
+  targetIssueId String   @db.Uuid
+  type          LinkType
+  createdById   String   @db.Uuid
+  createdAt     DateTime @default(now())
+  sourceIssue   Issue    @relation("IssueLinkSource", fields: [sourceIssueId], references: [id], onDelete: Cascade)
+  targetIssue   Issue    @relation("IssueLinkTarget", fields: [targetIssueId], references: [id], onDelete: Cascade)
+  createdBy     User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([sourceIssueId, targetIssueId, type])
+}
+
+model Label {
+  id        String       @id @default(uuid()) @db.Uuid
+  projectId String       @db.Uuid
+  name      String
+  color     String       @default("#64748b")
+  createdAt DateTime     @default(now())
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues    IssueLabel[]
+
+  @@unique([projectId, name])
+}
+
+model IssueLabel {
+  id      String @id @default(uuid()) @db.Uuid
+  issueId String @db.Uuid
+  labelId String @db.Uuid
+  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, labelId])
+}
+
+model CustomFieldValue {
+  id            String      @id @default(uuid()) @db.Uuid
+  issueId       String      @db.Uuid
+  customFieldId String      @db.Uuid
+  value         String?     @db.Text
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  issue         Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  customField   CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, customFieldId])
+}
+
+model IssueWatcher {
+  id        String   @id @default(uuid()) @db.Uuid
+  issueId   String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, userId])
+}
+
+model IssueHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  issueId   String   @db.Uuid
+  userId    String   @db.Uuid
+  field     String
+  oldValue  String?  @db.Text
+  newValue  String?  @db.Text
+  createdAt DateTime @default(now())
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  /// Speeds issue audit timeline rendering.
+  @@index([issueId, createdAt])
+}
+
+model Comment {
+  id        String    @id @default(uuid()) @db.Uuid
+  issueId   String    @db.Uuid
+  userId    String    @db.Uuid
+  body      String    @db.Text
+  parentId  String?   @db.Uuid
+  isEdited  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  issue     Issue     @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  mentions  Mention[]
+}
+
+model Mention {
+  id        String   @id @default(uuid()) @db.Uuid
+  commentId String?  @db.Uuid
+  pageId    String?  @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  page      Page?    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Attachment {
+  id        String   @id @default(uuid()) @db.Uuid
+  issueId   String?  @db.Uuid
+  pageId    String?  @db.Uuid
+  userId    String   @db.Uuid
+  filename  String
+  mimeType  String
+  sizeBytes BigInt
+  bucketKey String
+  createdAt DateTime @default(now())
+  issue     Issue?   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  page      Page?    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model Sprint {
+  id          String        @id @default(uuid()) @db.Uuid
+  projectId   String        @db.Uuid
+  name        String
+  goal        String?       @db.Text
+  status      SprintStatus  @default(DRAFT)
+  startDate   DateTime
+  endDate     DateTime
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues      Issue[]       @relation("IssueSprint")
+  sprintIssues SprintIssue[]
+
+  @@unique([projectId, name])
+}
+
+model SprintIssue {
+  id                String   @id @default(uuid()) @db.Uuid
+  sprintId          String   @db.Uuid
+  issueId           String   @db.Uuid
+  addedAt           DateTime @default(now())
+  completedInSprint Boolean  @default(false)
+  sprint            Sprint   @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  issue             Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@unique([sprintId, issueId])
+}
+
+model Version {
+  id          String        @id @default(uuid()) @db.Uuid
+  projectId   String        @db.Uuid
+  name        String
+  description String?
+  status      VersionStatus @default(UNRELEASED)
+  startDate   DateTime?
+  releaseDate DateTime?
+  releasedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues      Issue[]
+
+  @@unique([projectId, name])
+}
+
+/// Monthly partitioning strategy: keep Prisma mapped to this parent table and create child partitions for dateStarted using scripts/partition.sh before each month starts.
+model Worklog {
+  id          String   @id @default(uuid()) @db.Uuid
+  issueId     String   @db.Uuid
+  userId      String   @db.Uuid
+  timeSpent   Int
+  dateStarted DateTime
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  issue       Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  /// Speeds worklog lookups from issue detail pages grouped by author.
+  @@index([issueId, userId])
+  /// Speeds personal timesheets by date range.
+  @@index([userId, dateStarted])
+  /// Speeds issue time reports by date range.
+  @@index([issueId, dateStarted])
+}
+
+model TimerSession {
+  id                 String      @id @default(uuid()) @db.Uuid
+  issueId            String      @db.Uuid
+  userId             String      @db.Uuid
+  startedAt          DateTime
+  accumulatedSeconds Int         @default(0)
+  status             TimerStatus @default(ACTIVE)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  issue              Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, userId])
+}
+
+model PerformanceSnapshot {
+  id                    String     @id @default(uuid()) @db.Uuid
+  userId                String     @db.Uuid
+  projectId             String?    @db.Uuid
+  periodType            PeriodType
+  periodKey             String
+  issuesAssigned        Int        @default(0)
+  issuesCompleted       Int        @default(0)
+  issuesCreated         Int        @default(0)
+  timeLoggedSeconds     Int        @default(0)
+  onTimePct             Float      @default(0)
+  storyPointsDelivered  Int        @default(0)
+  avgResolutionSeconds  Float?
+  estimateAccuracyPct   Float?
+  bugRate               Float?
+  reopenRate            Float?
+  createdAt             DateTime   @default(now())
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project               Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId, periodType, periodKey])
+  /// Speeds individual dashboard period lookups.
+  @@index([userId, periodType, periodKey])
+  /// Speeds team dashboard project-period rollups.
+  @@index([projectId, periodType, periodKey])
+}
+
+model Notification {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @db.Uuid
+  type       NotificationType
+  title      String
+  body       String
+  entityType String
+  entityId   String
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Speeds notification bell unread counts and timeline pagination.
+  @@index([userId, isRead, createdAt])
+}
+
+model NotificationPref {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  eventType NotificationType
+  inApp     Boolean          @default(true)
+  email     Boolean          @default(true)
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventType])
+}
+
+model Space {
+  id          String        @id @default(uuid()) @db.Uuid
+  orgId       String        @db.Uuid
+  type        SpaceType
+  name        String
+  key         String
+  description String?
+  iconUrl     String?
+  ownerId     String        @db.Uuid
+  isArchived  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  org         Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  owner       User          @relation("SpaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members     SpaceMember[]
+  pages       Page[]
+
+  @@unique([orgId, key])
+}
+
+model SpaceMember {
+  id        String    @id @default(uuid()) @db.Uuid
+  spaceId   String    @db.Uuid
+  userId    String    @db.Uuid
+  role      SpaceRole @default(VIEWER)
+  createdAt DateTime  @default(now())
+  space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, userId])
+}
+
+model Page {
+  id            String            @id @default(uuid()) @db.Uuid
+  spaceId       String            @db.Uuid
+  parentId      String?           @db.Uuid
+  title         String
+  slug          String
+  content       String            @db.Text
+  contentJson   Json              @default("{}")
+  version       Int               @default(1)
+  publishedAt   DateTime?
+  createdById   String            @db.Uuid
+  updatedById   String            @db.Uuid
+  isArchived    Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  space         Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  parent        Page?             @relation("PageTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children      Page[]            @relation("PageTree")
+  createdBy     User              @relation("PageCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy     User              @relation("PageUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+  versions      PageVersion[]
+  restrictions  PageRestriction[]
+  comments      PageComment[]
+  watches       PageWatch[]
+  mentions      Mention[]
+  attachments   Attachment[]
+
+  /// Speeds recursive page tree rendering.
+  @@index([spaceId, parentId])
+  /// Speeds URL slug resolution inside a space.
+  @@unique([spaceId, slug])
+}
+
+model PageVersion {
+  id          String   @id @default(uuid()) @db.Uuid
+  pageId      String   @db.Uuid
+  version     Int
+  content     String   @db.Text
+  contentJson Json     @default("{}")
+  createdById String   @db.Uuid
+  createdAt   DateTime @default(now())
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([pageId, version])
+}
+
+model PageRestriction {
+  id        String          @id @default(uuid()) @db.Uuid
+  pageId    String          @db.Uuid
+  type      RestrictionType
+  role      SpaceRole?
+  userId    String?         @db.Uuid
+  createdAt DateTime        @default(now())
+  page      Page            @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user      User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PageComment {
+  id             String    @id @default(uuid()) @db.Uuid
+  pageId         String    @db.Uuid
+  userId         String    @db.Uuid
+  body           String    @db.Text
+  selectionStart Int?
+  selectionEnd   Int?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  page           Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model PageWatch {
+  id        String   @id @default(uuid()) @db.Uuid
+  pageId    String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, userId])
+}
+
+model AuditLog {
+  id         String       @id @default(uuid()) @db.Uuid
+  orgId      String       @db.Uuid
+  userId     String       @db.Uuid
+  action     String
+  entityType String
+  entityId   String
+  oldData    Json?
+  newData    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime     @default(now())
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  /// Speeds organization audit timeline pagination.
+  @@index([orgId, createdAt])
+  /// Speeds user-specific audit investigations.
+  @@index([userId, createdAt])
+  /// Speeds entity drill-down audit history.
+  @@index([entityType, entityId])
+}
+
+model WebhookConfig {
+  id         String            @id @default(uuid()) @db.Uuid
+  projectId  String            @db.Uuid
+  url        String
+  events     String[]
+  secret     String?
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id              String        @id @default(uuid()) @db.Uuid
+  webhookConfigId String        @db.Uuid
+  event           String
+  payload         Json
+  statusCode      Int?
+  response        String?       @db.Text
+  attempt         Int           @default(1)
+  deliveredAt     DateTime?
+  createdAt       DateTime      @default(now())
+  webhookConfig   WebhookConfig @relation(fields: [webhookConfigId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id         String       @id @default(uuid()) @db.Uuid
+  orgId      String       @db.Uuid
+  userId     String       @db.Uuid
+  name       String
+  keyHash    String       @unique
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime     @default(now())
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavedFilter {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  projectId String?  @db.Uuid
+  name      String
+  filters   Json     @default("{}")
+  jql       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+}

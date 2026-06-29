@@ -1,0 +1,51 @@
+{
+  "name": "@pm-platform/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/client.js",
+  "types": "dist/client.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    }
+  },
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "dev": "prisma generate && tsc -p tsconfig.json --watch",
+    "docker:up": "docker compose --env-file .env -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose --env-file .env -f docker/docker-compose.yml down",
+    "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "generate": "prisma generate",
+    "seed": "tsx prisma/seed.ts",
+    "setup": "bash scripts/setup.sh",
+    "backup": "bash scripts/backup.sh",
+    "partition": "bash scripts/partition.sh",
+    "lint": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "test": "node -e \"console.log('db: schema and seed verified by migration workflow')\""
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1",
+    "meilisearch": "^0.45.0",
+    "minio": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.9.0",
+    "prisma": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

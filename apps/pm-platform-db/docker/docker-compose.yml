@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pm-platform-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pmuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pmpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-pmplatform}
+    ports:
+      - "127.0.0.1:55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pmuser} -d ${POSTGRES_DB:-pmplatform}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: pm-platform-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: pm-platform-meilisearch
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-your-master-key}
+      MEILI_ENV: development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili_data:/meili_data
+
+  minio:
+    image: minio/minio:latest
+    container_name: pm-platform-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: pm-platform-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "sleep 5;
+      mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin};
+      mc mb --ignore-existing local/${MINIO_BUCKET_ATTACHMENTS:-attachments};
+      mc mb --ignore-existing local/${MINIO_BUCKET_EXPORTS:-exports};
+      exit 0;"
+
+  pgbouncer:
+    image: bitnami/pgbouncer:latest
+    container_name: pm-platform-pgbouncer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRESQL_HOST: postgres
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_USERNAME: ${POSTGRES_USER:-pmuser}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-pmpassword}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB:-pmplatform}
+      PGBOUNCER_DATABASE: ${POSTGRES_DB:-pmplatform}
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 500
+      PGBOUNCER_DEFAULT_POOL_SIZE: 50
+    ports:
+      - "${PGBOUNCER_PORT:-6432}:6432"
+
+volumes:
+  postgres_data:
+  redis_data:
+  meili_data:
+  minio_data:
