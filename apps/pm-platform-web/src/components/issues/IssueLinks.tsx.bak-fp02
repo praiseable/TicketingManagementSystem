@@ -1,2 +1,0 @@
-import { Button } from '@/components/ui/button';
-export function IssueLinks({ links = [] }: { links?: unknown[] }) { return <div className="space-y-2"><div className="flex items-center justify-between"><h3 className="font-semibold">Issue links</h3><Button variant="outline" size="sm">Add link</Button></div>{links.length ? links.map((_, i) => <div key={i} className="rounded-md border p-2 text-sm">Linked issue #{i + 1}</div>) : <p className="text-sm text-muted-foreground">No linked issues.</p>}</div>; }

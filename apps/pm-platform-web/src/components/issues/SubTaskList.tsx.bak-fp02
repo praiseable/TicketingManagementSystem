@@ -1,2 +1,0 @@
-import { Square } from 'lucide-react';
-export function SubTaskList({ subtasks = [] }: { subtasks?: { id: string; title: string }[] }) { return <div className="space-y-2"><h3 className="font-semibold">Sub-tasks</h3>{subtasks.map((task) => <div key={task.id} className="flex items-center gap-2 rounded-md border p-2 text-sm"><Square className="h-4 w-4" />{task.title}</div>)}{!subtasks.length && <p className="text-sm text-muted-foreground">No sub-tasks.</p>}</div>; }
