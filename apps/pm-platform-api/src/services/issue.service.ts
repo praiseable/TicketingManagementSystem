@@ -103,6 +103,21 @@ async function upsertCustomFields(tx: any, projectId: string, issueId: string, c
   }
 }
 
+
+function normalizeQueryValue(value: unknown): string | undefined {
+  if (Array.isArray(value)) value = value[0];
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function dateRange(fromValue: unknown, toValue: unknown) {
+  const range: any = {};
+  const from = normalizeQueryValue(fromValue);
+  const to = normalizeQueryValue(toValue);
+  if (from) range.gte = new Date(from);
+  if (to) range.lte = new Date(to);
+  return Object.keys(range).length ? range : undefined;
+}
+
 function normalizeData(input: any) {
   const allowed = [
     'title', 'description', 'priority', 'assigneeId', 'issueTypeId', 'workflowStatusId', 'parentId',
@@ -137,6 +152,12 @@ export const issueService = {
     if (query.assignee) where.assigneeId = String(query.assignee);
     if (query.priority) where.priority = String(query.priority);
     if (query.sprint) where.sprintId = String(query.sprint);
+    const createdAtRange = dateRange(query.createdFrom ?? query.from, query.createdTo ?? query.to);
+    if (createdAtRange) where.createdAt = createdAtRange;
+    const updatedAtRange = dateRange(query.updatedFrom, query.updatedTo);
+    if (updatedAtRange) where.updatedAt = updatedAtRange;
+    const dueDateRange = dateRange(query.dueFrom, query.dueTo);
+    if (dueDateRange) where.dueDate = dueDateRange;
     if (query.parentId === 'null') where.parentId = null;
     else if (query.parentId) where.parentId = String(query.parentId);
     if (query.label) where.labels = { some: { label: { name: String(query.label) } } };

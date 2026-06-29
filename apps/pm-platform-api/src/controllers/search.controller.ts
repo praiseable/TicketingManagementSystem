@@ -1,11 +1,71 @@
 import { prisma } from '@pm-platform/db';
 import { searchService } from '../services/search.service.js';
-import { asyncHandler, created, noContent, ok } from '../utils/apiResponse.js';
+import { asyncHandler, created, noContent, ok, AppError } from '../utils/apiResponse.js';
+
+function first(value: unknown): unknown {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function toStringValue(value: unknown): string | undefined {
+  const raw = first(value);
+  return typeof raw === 'string' && raw.trim() ? raw.trim() : undefined;
+}
+
+function parseJson(value: unknown): Record<string, unknown> {
+  const raw = toStringValue(value);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    throw new AppError(400, 'INVALID_FILTERS_JSON', 'filters must be a valid JSON object');
+  }
+}
 
 export const searchController = {
-  global: asyncHandler(async (req, res) => ok(res, await searchService.global(String(req.query.q ?? ''), { projectId: req.query.projectId ? String(req.query.projectId) : undefined, type: req.query.type ? String(req.query.type) : undefined }))),
-  issues: asyncHandler(async (req, res) => ok(res, await searchService.issues(String(req.query.q ?? ''), req.query.filters ? JSON.parse(String(req.query.filters)) : {}, Number(req.query.page ?? 1), Number(req.query.limit ?? 25)))),
-  saveFilter: asyncHandler(async (req, res) => created(res, await prisma.savedFilter.create({ data: { userId: req.user!.id, ...req.body } }))),
-  filters: asyncHandler(async (req, res) => ok(res, await prisma.savedFilter.findMany({ where: { userId: req.user!.id }, orderBy: { updatedAt: 'desc' } }))),
-  deleteFilter: asyncHandler(async (req, res) => { await prisma.savedFilter.delete({ where: { id: req.params.id } }); noContent(res); })
+  global: asyncHandler(async (req, res) => ok(res, await searchService.global(String(req.query.q ?? ''), {
+    projectId: toStringValue(req.query.projectId),
+    type: toStringValue(req.query.type)
+  }))),
+
+  issues: asyncHandler(async (req, res) => ok(res, await searchService.issues(
+    String(req.query.q ?? ''),
+    parseJson(req.query.filters),
+    Number(req.query.page ?? 1),
+    Number(req.query.limit ?? 25)
+  ))),
+
+  saveFilter: asyncHandler(async (req, res) => {
+    const name = String(req.body.name ?? '').trim();
+    if (!name) throw new AppError(400, 'FILTER_NAME_REQUIRED', 'Filter name is required');
+
+    const saved = await prisma.savedFilter.upsert({
+      where: { userId_name: { userId: req.user!.id, name } },
+      update: {
+        projectId: req.body.projectId || null,
+        filters: req.body.filters ?? {},
+        jql: req.body.jql ?? null
+      },
+      create: {
+        userId: req.user!.id,
+        projectId: req.body.projectId || null,
+        name,
+        filters: req.body.filters ?? {},
+        jql: req.body.jql ?? null
+      }
+    });
+    created(res, saved);
+  }),
+
+  filters: asyncHandler(async (req, res) => {
+    const projectId = toStringValue(req.query.projectId);
+    const where = { userId: req.user!.id, ...(projectId ? { projectId } : {}) };
+    ok(res, await prisma.savedFilter.findMany({ where, orderBy: { updatedAt: 'desc' } }));
+  }),
+
+  deleteFilter: asyncHandler(async (req, res) => {
+    const id = toStringValue(req.params.id);
+    await prisma.savedFilter.deleteMany({ where: { id, userId: req.user!.id } });
+    noContent(res);
+  })
 };

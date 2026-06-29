@@ -306,3 +306,49 @@ Smoke evidence:
 - Guard allowed transition after required custom field value was filled
 - Bulk priority update completed successfully
 - Bulk label update completed successfully
+
+## Checkpoint — UC-23 to UC-24 Notifications and Issue Filters
+
+Date: 2026-06-29
+
+Status after applying Feature Pack 08:
+
+- UC-23 View notifications: IMPLEMENTED
+- UC-23 Mark notification read: IMPLEMENTED
+- UC-23 Mark all notifications read: IMPLEMENTED
+- UC-23 Notification preferences: IMPLEMENTED
+- UC-24 Filter issue list by search/status/type/priority/label/date range: IMPLEMENTED
+- UC-24 Save filter: IMPLEMENTED
+- UC-24 List saved filters: IMPLEMENTED
+- UC-24 Delete saved filter: IMPLEMENTED
+
+Verification script:
+
+- scripts/smoke-uc23-24-notifications-filters.sh
+
+## Checkpoint — UC-23 to UC-24 Notifications / Issue Filters Completion
+
+Date: 2026-06-29
+
+Status:
+
+- UC-23 View notifications: DONE
+- UC-23 Mark single notification as read: DONE
+- UC-23 Mark all notifications as read: DONE
+- UC-23 Notification preferences baseline: DONE
+- UC-24 Filter issue list by type/status/assignee/priority/label/sprint/search/date: DONE
+- UC-24 Saved filter baseline: DONE
+
+Verified through:
+
+- scripts/smoke-uc23-24-notifications-filters.sh
+
+Smoke evidence:
+
+- Notification list returned success=true
+- Unread notification metadata returned
+- Single notification marked read
+- Mark all read completed
+- Notification preferences loaded/updated
+- Issue filters returned correct filtered results
+- Saved filter create/list/delete flow verified

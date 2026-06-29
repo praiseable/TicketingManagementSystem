@@ -1,5 +1,6 @@
 import { api, unwrap, unwrapWithMeta } from './client';
 import type { Notification } from '@/types';
+
 export const notificationsApi = {
   list: (params?: Record<string, unknown>) => api.get('/notifications', { params }).then(unwrapWithMeta<Notification[]>),
   read: (id: string) => api.patch(`/notifications/${id}/read`),
