@@ -133,3 +133,27 @@ Verified through:
 - scripts/smoke-uc04-07-org-projects.sh
 - Project list create-project UI
 - Project settings general/member/workflow UI
+
+## Checkpoint — UC-04 to UC-07 Organization / Project / Member Completion
+
+Date: 2026-06-29
+
+Status:
+
+- UC-04 Create/manage organisation: DONE
+- UC-05 Create project with default issue types and workflow: DONE
+- UC-06 Invite team members: DONE
+- UC-07 Assign/change project roles: DONE
+- UC-07 Remove project member: DONE
+
+Verified through:
+
+- scripts/smoke-uc04-07-org-projects.sh
+
+Smoke evidence:
+
+- Organization get/update returned success=true
+- Project created with 3 issue types and 5 workflow statuses
+- dev1@acme.com invited and added as project member
+- dev1@acme.com role changed from MEMBER to ADMIN
+- dev1@acme.com removed from project
