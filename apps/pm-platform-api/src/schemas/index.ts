@@ -80,8 +80,23 @@ export const workflowSchemas = {
 };
 
 export const typeSchemas = {
-  issueType: z.object({ name: z.string().min(2), color: z.string().default('#64748b'), icon: z.string().default('circle'), isDefault: z.boolean().optional(), position: z.number().optional() }),
-  customField: z.object({ name: z.string().min(2), key: z.string().min(2), type: z.enum(['TEXT', 'TEXTAREA', 'NUMBER', 'DATE', 'DATETIME', 'DROPDOWN', 'MULTISELECT', 'USER', 'CHECKBOX', 'URL']), options: z.unknown().optional(), isRequired: z.boolean().optional(), position: z.number().optional() })
+  issueType: z.object({
+    name: z.string().min(2),
+    color: z.string().default('#64748b'),
+    icon: z.string().default('circle'),
+    isDefault: z.boolean().optional(),
+    position: z.coerce.number().optional(),
+    customFieldIds: z.array(id).optional()
+  }),
+  customField: z.object({
+    name: z.string().min(2),
+    key: z.string().min(2).optional(),
+    type: z.enum(['TEXT', 'TEXTAREA', 'NUMBER', 'DATE', 'DATETIME', 'DROPDOWN', 'MULTISELECT', 'USER', 'CHECKBOX', 'URL']),
+    options: z.unknown().optional(),
+    isRequired: z.boolean().optional(),
+    position: z.coerce.number().optional(),
+    issueTypeIds: z.array(id).optional()
+  })
 };
 
 export const commentSchemas = { body: z.object({ body: z.string().min(1), parentId: id.optional() }) };

@@ -259,3 +259,50 @@ Smoke evidence:
 - Full detail and history verified
 - Parent issue delete returned 204
 - Deleted parent and subtask returned 404
+
+## Feature Pack 07 — UC-17 to UC-22 Configuration / Workflow / Bulk Actions
+
+Status: APPLIED, pending smoke verification
+
+Scope:
+
+- UC-17 Create custom field
+- UC-18 Configure issue types
+- UC-20 Create workflow
+- UC-21 Set transition guard
+- UC-22 Bulk update issues
+
+Verification script:
+
+```bash
+./scripts/smoke-uc17-22-config-workflow-bulk.sh
+```
+
+## Checkpoint — UC-17 to UC-22 Configuration / Workflow / Bulk Completion
+
+Date: 2026-06-29
+
+Status:
+
+- UC-17 Create custom field: DONE
+- UC-18 Configure issue types: DONE
+- UC-20 Create workflow: DONE
+- UC-21 Set transition guard: DONE
+- UC-22 Bulk update issues: DONE
+
+Verified through:
+
+- scripts/smoke-uc17-22-config-workflow-bulk.sh
+
+Smoke evidence:
+
+- Custom field created successfully
+- Issue type created and linked with custom field layout
+- Workflow created successfully
+- Workflow statuses created successfully
+- Workflow transition created successfully
+- Required-field transition guard created successfully
+- Guard correctly blocked transition when required custom field was empty
+- Guard allowed transition after required custom field value was filled
+- Bulk priority update completed successfully
+- Bulk label update completed successfully
