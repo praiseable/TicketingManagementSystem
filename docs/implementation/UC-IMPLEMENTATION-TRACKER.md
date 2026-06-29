@@ -225,3 +225,37 @@ Smoke evidence:
 - Full detail and history verified
 - Parent issue delete returned 204
 - Deleted parent and subtask returned 404
+
+## Checkpoint — UC-08 to UC-16 Issue Tracker Completion
+
+Date: 2026-06-29
+
+Status:
+
+- UC-08 Create issue with type, fields, priority, labels, custom field values: DONE
+- UC-09 Edit issue and write changelog/history: DONE
+- UC-10 Delete issue and cascade sub-task: DONE
+- UC-11 Assign issue and trigger notification path: DONE
+- UC-12 Create sub-task using parent issue: DONE
+- UC-13 Link issues by relationship type: DONE
+- UC-14 Add comment with @mention notification: DONE
+- UC-15 Attach file through MinIO and return presigned URL: DONE
+- UC-16 View full issue history/changelog: DONE
+
+Verified through:
+
+- scripts/smoke-uc08-16-issues.sh
+- Full regression run on 2026-06-29
+
+Smoke evidence:
+
+- Issue created with custom field values, labels, priority, estimates, and due date
+- Issue update wrote history for title, description, priority, assignee, and labels
+- Sub-task created and deleted with parent
+- Issue link created
+- Comment created with @dev1@acme.com mention
+- Mention notification count verified in database
+- File uploaded to MinIO and presigned URL generated
+- Full detail and history verified
+- Parent issue delete returned 204
+- Deleted parent and subtask returned 404
