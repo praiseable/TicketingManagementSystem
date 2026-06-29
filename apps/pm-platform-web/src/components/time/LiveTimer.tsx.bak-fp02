@@ -1,0 +1,10 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Pause, Play, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { WorklogForm } from './WorklogForm';
+import { useTimer } from '@/hooks/useTimer';
+import { formatDuration } from '@/utils/formatters';
+
+export function LiveTimer({ issueId }: { issueId: string }) { const { timer, elapsed, start, pause, stop } = useTimer(issueId); const [worklogOpen, setWorklogOpen] = useState(false); const [stoppedSeconds, setStoppedSeconds] = useState(0); async function handleStop() { setStoppedSeconds(elapsed); await stop.mutateAsync(); setWorklogOpen(true); } return <div className="rounded-lg border p-4"><div className="mb-3 text-sm font-semibold">Live timer</div><motion.div className="mb-4 font-mono text-3xl" animate={timer?.status === 'ACTIVE' ? { scale: [1, 1.03, 1] } : { scale: 1 }} transition={{ repeat: timer?.status === 'ACTIVE' ? Infinity : 0, duration: 1.2 }}>{formatDuration(elapsed)}</motion.div><div className="flex gap-2">{!timer && <Button onClick={() => start.mutate()} disabled={start.isPending}><Play className="h-4 w-4" />Start</Button>}{timer?.status === 'ACTIVE' && <Button variant="outline" onClick={() => pause.mutate()}><Pause className="h-4 w-4" />Pause</Button>}{timer && <Button variant="destructive" onClick={handleStop}><Square className="h-4 w-4" />Stop</Button>}</div><Dialog open={worklogOpen} onOpenChange={setWorklogOpen}><DialogContent><DialogHeader><DialogTitle>Adjust saved worklog</DialogTitle></DialogHeader><WorklogForm issueId={issueId} defaultSeconds={stoppedSeconds} onSaved={() => setWorklogOpen(false)} /></DialogContent></Dialog></div>; }

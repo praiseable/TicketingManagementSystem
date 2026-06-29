@@ -1,0 +1,14 @@
+import multer from 'multer';
+import { prisma } from '@pm-platform/db';
+import { env } from '../config/env.js';
+import { asyncHandler, created, noContent, ok } from '../utils/apiResponse.js';
+import { storageService } from '../services/storage.service.js';
+
+export const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: env.MAX_FILE_SIZE_MB * 1024 * 1024 } });
+
+export const attachmentsController = {
+  list: asyncHandler(async (req, res) => ok(res, await prisma.attachment.findMany({ where: { issueId: req.params.issueId }, orderBy: { createdAt: 'desc' } }))),
+  create: asyncHandler(async (req, res) => { const file = req.file!; const stored = await storageService.putAttachment(file); const attachment = await prisma.attachment.create({ data: { issueId: req.params.issueId, userId: req.user!.id, filename: file.originalname, mimeType: file.mimetype, sizeBytes: BigInt(file.size), bucketKey: stored.key } }); created(res, attachment); }),
+  url: asyncHandler(async (req, res) => { const attachment = await prisma.attachment.findUnique({ where: { id: req.params.attachmentId } }); ok(res, { url: attachment ? await storageService.presignedAttachmentUrl(attachment.bucketKey) : null }); }),
+  remove: asyncHandler(async (req, res) => { await prisma.attachment.delete({ where: { id: req.params.attachmentId } }); noContent(res); })
+};

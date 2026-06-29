@@ -1,0 +1,12 @@
+import { api, unwrap, unwrapWithMeta } from './client';
+import type { Issue } from '@/types';
+export const issuesApi = {
+  list: (projectId: string, params?: Record<string, unknown>) => api.get(`/projects/${projectId}/issues`, { params }).then(unwrapWithMeta<Issue[]>),
+  create: (projectId: string, body: Partial<Issue>) => api.post(`/projects/${projectId}/issues`, body).then(unwrap<Issue>),
+  get: (projectId: string, issueId: string) => api.get(`/projects/${projectId}/issues/${issueId}`).then(unwrap<Issue>),
+  update: (projectId: string, issueId: string, body: Partial<Issue>) => api.patch(`/projects/${projectId}/issues/${issueId}`, body).then(unwrap<Issue>),
+  transition: (projectId: string, issueId: string, toStatusId: string, comment?: string) => api.post(`/projects/${projectId}/issues/${issueId}/transition`, { toStatusId, comment }).then(unwrap<Issue>),
+  bulk: (projectId: string, body: { issueIds: string[]; action: string; value?: unknown }) => api.post(`/projects/${projectId}/issues/bulk`, body).then(unwrap<{ updated: number }>),
+  watch: (projectId: string, issueId: string) => api.post(`/projects/${projectId}/issues/${issueId}/watch`),
+  unwatch: (projectId: string, issueId: string) => api.delete(`/projects/${projectId}/issues/${issueId}/watch`)
+};

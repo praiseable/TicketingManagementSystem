@@ -1,0 +1,30 @@
+import type { NextFunction, Request, Response } from 'express';
+
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public code: string,
+    message: string,
+    public details?: unknown
+  ) {
+    super(message);
+  }
+}
+
+export function ok<T>(res: Response, data: T, meta?: unknown) {
+  return res.status(200).json({ success: true, data, ...(meta ? { meta } : {}) });
+}
+
+export function created<T>(res: Response, data: T) {
+  return res.status(201).json({ success: true, data });
+}
+
+export function noContent(res: Response) {
+  return res.status(204).send();
+}
+
+export const asyncHandler =
+  <T extends (req: Request, res: Response, next: NextFunction) => Promise<unknown>>(fn: T) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
