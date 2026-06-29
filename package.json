@@ -1,0 +1,18 @@
+{
+  "name": "pm-platform",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "pnpm build:packages && turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,css,prisma}\"",
+    "build:packages": "pnpm --filter @pm-platform/shared-types build && pnpm --filter @pm-platform/db build"
+  },
+  "devDependencies": {
+    "turbo": "^2.2.3",
+    "typescript": "^5.6.3",
+    "prettier": "^3.3.3"
+  }
+}
