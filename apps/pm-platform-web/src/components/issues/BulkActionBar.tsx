@@ -1,0 +1,2 @@
+import { Button } from '@/components/ui/button';
+export function BulkActionBar({ count, onClear, onDelete }: { count: number; onClear: () => void; onDelete: () => void }) { if (!count) return null; return <div className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border bg-background px-4 py-2 shadow-lg"><span className="text-sm font-medium">{count} selected</span><Button size="sm" variant="outline" onClick={onClear}>Clear</Button><Button size="sm" variant="destructive" onClick={onDelete}>Delete</Button></div>; }

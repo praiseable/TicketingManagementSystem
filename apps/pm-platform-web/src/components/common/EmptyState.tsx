@@ -1,0 +1,2 @@
+import { Inbox } from 'lucide-react';
+export function EmptyState({ title = 'Nothing here', description = 'Create or adjust filters to see data.' }: { title?: string; description?: string }) { return <div className="flex min-h-40 flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center"><Inbox className="mb-3 h-8 w-8 text-muted-foreground" /><h3 className="font-semibold">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{description}</p></div>; }

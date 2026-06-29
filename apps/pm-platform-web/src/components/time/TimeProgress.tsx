@@ -1,0 +1,2 @@
+import { formatDuration } from '@/utils/formatters';
+export function TimeProgress({ logged = 0, estimate = 0 }: { logged?: number; estimate?: number | null }) { const pct = estimate ? Math.min((logged / estimate) * 100, 100) : 0; return <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>{formatDuration(logged)} logged</span><span>{estimate ? formatDuration(estimate) : 'No estimate'}</span></div><div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary" style={{ width: `${pct}%` }} /></div></div>; }

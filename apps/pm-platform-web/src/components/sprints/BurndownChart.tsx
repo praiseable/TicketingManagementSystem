@@ -1,0 +1,3 @@
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { EmptyState } from '@/components/common/EmptyState';
+export function BurndownChart({ data = [] }: { data?: { date: string; remaining: number; ideal: number }[] }) { if (!data.length) return <EmptyState title="No burndown data" />; return <div className="h-72 rounded-lg border p-4"><ResponsiveContainer width="100%" height="100%"><LineChart data={data}><XAxis dataKey="date" /><YAxis /><Tooltip /><Line type="monotone" dataKey="remaining" strokeWidth={2} /><Line type="monotone" dataKey="ideal" strokeDasharray="4 4" /></LineChart></ResponsiveContainer></div>; }

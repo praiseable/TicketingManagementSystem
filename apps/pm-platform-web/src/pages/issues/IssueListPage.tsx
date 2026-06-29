@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { SearchInput } from '@/components/search/SearchInput';
+import { StatusBadge } from '@/components/issues/StatusBadge';
+import { PriorityBadge } from '@/components/issues/PriorityBadge';
+import { BulkActionBar } from '@/components/issues/BulkActionBar';
+import { useIssues } from '@/hooks/useIssues';
+export function IssueListPage() { const { id = '' } = useParams(); const [q, setQ] = useState(''); const [selected, setSelected] = useState<string[]>([]); const { data } = useIssues(id, { search: q }); const issues = data?.data ?? []; return <div className="space-y-4"><h1 className="text-3xl font-bold">Issues</h1><SearchInput value={q} onChange={setQ} /><div className="rounded-lg border"><table className="w-full text-sm"><thead><tr className="border-b"><th className="p-3"></th><th className="p-3 text-left">Key</th><th className="p-3 text-left">Title</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Priority</th></tr></thead><tbody>{issues.map((issue) => <tr key={issue.id} className="border-b"><td className="p-3"><input type="checkbox" checked={selected.includes(issue.id)} onChange={(e) => setSelected((s) => e.target.checked ? [...s, issue.id] : s.filter((x) => x !== issue.id))} /></td><td className="p-3 font-medium"><Link to={`/projects/${id}/issues/${issue.id}`}>{issue.key}</Link></td><td className="p-3">{issue.title}</td><td className="p-3"><StatusBadge status={issue.workflowStatus} /></td><td className="p-3"><PriorityBadge priority={issue.priority} /></td></tr>)}</tbody></table></div><BulkActionBar count={selected.length} onClear={() => setSelected([])} onDelete={() => setSelected([])} /></div>; }

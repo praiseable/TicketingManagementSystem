@@ -1,0 +1,3 @@
+import { useQuery } from '@tanstack/react-query';
+import { api, unwrapWithMeta } from '@/api/client';
+export function AdminUsersPage() { const { data } = useQuery({ queryKey: ['admin-users'], queryFn: () => api.get('/admin/users').then(unwrapWithMeta<any[]>) }); return <div className="space-y-4"><h1 className="text-3xl font-bold">Admin users</h1><div className="rounded-lg border"><table className="w-full text-sm"><tbody>{data?.data.map((u) => <tr key={u.id} className="border-b"><td className="p-3">{u.email}</td><td>{u.role}</td><td>{u.isActive ? 'Active' : 'Inactive'}</td></tr>)}</tbody></table></div></div>; }

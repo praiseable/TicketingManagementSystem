@@ -1,0 +1,2 @@
+import { Button } from '@/components/ui/button';
+export function SearchFilters({ onClear }: { onClear?: () => void }) { return <div className="flex flex-wrap gap-2 rounded-lg border p-3"><Button variant="outline" size="sm">Assignee</Button><Button variant="outline" size="sm">Status</Button><Button variant="outline" size="sm">Priority</Button><Button variant="ghost" size="sm" onClick={onClear}>Clear</Button></div>; }

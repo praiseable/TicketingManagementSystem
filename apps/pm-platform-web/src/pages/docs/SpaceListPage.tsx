@@ -1,0 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { spacesApi } from '@/api/spaces.api';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+export function SpaceListPage() { const qc = useQueryClient(); const { data = [] } = useQuery({ queryKey: ['spaces'], queryFn: spacesApi.list }); const create = useMutation({ mutationFn: () => spacesApi.create({ type: 'TEAM', name: `Team Space ${Date.now()}`, key: `TS${Math.floor(Math.random()*900+100)}` } as any), onSuccess: () => qc.invalidateQueries({ queryKey: ['spaces'] }) }); return <div className="space-y-4"><div className="flex items-center justify-between"><h1 className="text-3xl font-bold">Spaces</h1><Button onClick={() => create.mutate()}>Create space</Button></div><div className="grid gap-4 md:grid-cols-3">{data.map((space) => <Link key={space.id} to={`/spaces/${space.id}`}><Card className="h-full hover:bg-accent"><CardHeader><CardTitle>{space.name}</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">{space.description ?? 'Documentation space'} · {space._count?.pages ?? 0} pages</p></CardContent></Card></Link>)}</div></div>; }
