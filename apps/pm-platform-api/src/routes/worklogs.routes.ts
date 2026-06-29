@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { worklogsController } from '../controllers/worklogs.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id, worklogSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', validate({ params: z.object({ issueId: id }) }), worklogsController.list);
+router.post('/', validate({ params: z.object({ issueId: id }), body: worklogSchemas.create }), auditLogger('worklog.create'), worklogsController.create);
+router.patch('/:worklogId', validate({ params: z.object({ issueId: id, worklogId: id }), body: worklogSchemas.update }), auditLogger('worklog.update'), worklogsController.update);
+router.delete('/:worklogId', validate({ params: z.object({ issueId: id, worklogId: id }) }), auditLogger('worklog.delete'), worklogsController.remove);
+export default router;

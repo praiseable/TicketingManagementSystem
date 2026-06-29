@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { searchController } from '../controllers/search.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { paginationQuery, searchSchemas } from '../schemas/index.js';
+const router = Router();
+router.get('/', validate({ query: paginationQuery }), searchController.global);
+router.get('/issues', validate({ query: paginationQuery }), searchController.issues);
+router.post('/filters/save', validate({ body: searchSchemas.saveFilter }), auditLogger('filter.save'), searchController.saveFilter);
+router.get('/filters', searchController.filters);
+router.delete('/filters/:id', auditLogger('filter.delete'), searchController.deleteFilter);
+export default router;

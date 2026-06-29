@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { backlogsController } from '../controllers/backlogs.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { backlogSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', backlogsController.list);
+router.patch('/reorder', validate({ body: backlogSchemas.reorder }), auditLogger('backlog.reorder'), backlogsController.reorder);
+router.post('/move-to-sprint', validate({ body: backlogSchemas.moveToSprint }), auditLogger('backlog.moveToSprint'), backlogsController.moveToSprint);
+export default router;

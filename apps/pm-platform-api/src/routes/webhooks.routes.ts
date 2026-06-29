@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { webhooksController } from '../controllers/webhooks.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { webhookSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', webhooksController.list);
+router.post('/', validate({ body: webhookSchemas.config }), auditLogger('webhook.create'), webhooksController.create);
+router.patch('/:id', validate({ body: webhookSchemas.config.partial() }), auditLogger('webhook.update'), webhooksController.update);
+router.delete('/:id', auditLogger('webhook.delete'), webhooksController.remove);
+router.get('/:id/deliveries', webhooksController.deliveries);
+router.post('/:id/test', auditLogger('webhook.test'), webhooksController.test);
+export default router;

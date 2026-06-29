@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { timersController } from '../controllers/timers.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { timerSchemas } from '../schemas/index.js';
+const router = Router();
+router.post('/start', validate({ body: timerSchemas.issue }), auditLogger('timer.start'), timersController.start);
+router.post('/pause', validate({ body: timerSchemas.issue }), auditLogger('timer.pause'), timersController.pause);
+router.post('/stop', validate({ body: timerSchemas.issue }), auditLogger('timer.stop'), timersController.stop);
+router.get('/active', timersController.active);
+export default router;

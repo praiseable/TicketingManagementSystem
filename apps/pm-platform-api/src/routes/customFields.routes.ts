@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { customFieldsController } from '../controllers/customFields.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id, typeSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', validate({ params: z.object({ id }) }), customFieldsController.list);
+router.post('/', validate({ params: z.object({ id }), body: typeSchemas.customField }), auditLogger('customField.create'), customFieldsController.create);
+router.patch('/:fId', validate({ params: z.object({ id, fId: id }), body: typeSchemas.customField.partial() }), auditLogger('customField.update'), customFieldsController.update);
+router.delete('/:fId', validate({ params: z.object({ id, fId: id }) }), auditLogger('customField.delete'), customFieldsController.remove);
+export default router;

@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { performanceController } from '../controllers/performance.controller.js';
+import { validate } from '../middleware/validate.js';
+import { paginationQuery } from '../schemas/index.js';
+const router = Router();
+router.get('/me', validate({ query: paginationQuery }), performanceController.me);
+router.get('/team', validate({ query: paginationQuery }), performanceController.team);
+router.get('/reports/time', validate({ query: paginationQuery }), performanceController.timeReport);
+router.get('/reports/time/export', validate({ query: paginationQuery }), performanceController.exportTime);
+export default router;

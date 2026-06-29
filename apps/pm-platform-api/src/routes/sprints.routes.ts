@@ -1,0 +1,17 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { sprintsController } from '../controllers/sprints.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id, sprintSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', sprintsController.list);
+router.post('/', validate({ body: sprintSchemas.create }), auditLogger('sprint.create'), sprintsController.create);
+router.get('/velocity', sprintsController.velocity);
+router.get('/:sprintId', validate({ params: z.object({ projectId: id, sprintId: id }) }), sprintsController.get);
+router.patch('/:sprintId', validate({ params: z.object({ projectId: id, sprintId: id }), body: sprintSchemas.update }), auditLogger('sprint.update'), sprintsController.update);
+router.post('/:sprintId/start', validate({ params: z.object({ projectId: id, sprintId: id }) }), auditLogger('sprint.start'), sprintsController.start);
+router.post('/:sprintId/complete', validate({ params: z.object({ projectId: id, sprintId: id }), body: sprintSchemas.complete }), auditLogger('sprint.complete'), sprintsController.complete);
+router.delete('/:sprintId', validate({ params: z.object({ projectId: id, sprintId: id }) }), auditLogger('sprint.delete'), sprintsController.remove);
+router.get('/:sprintId/burndown', validate({ params: z.object({ projectId: id, sprintId: id }) }), sprintsController.burndown);
+export default router;

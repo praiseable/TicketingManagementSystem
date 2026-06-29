@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { issueTypesController } from '../controllers/issueTypes.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id, typeSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', validate({ params: z.object({ id }) }), issueTypesController.list);
+router.post('/', validate({ params: z.object({ id }), body: typeSchemas.issueType }), auditLogger('issueType.create'), issueTypesController.create);
+router.patch('/:typeId', validate({ params: z.object({ id, typeId: id }), body: typeSchemas.issueType.partial() }), auditLogger('issueType.update'), issueTypesController.update);
+router.delete('/:typeId', validate({ params: z.object({ id, typeId: id }) }), auditLogger('issueType.delete'), issueTypesController.remove);
+export default router;

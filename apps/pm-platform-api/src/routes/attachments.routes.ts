@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { attachmentsController, upload } from '../controllers/attachments.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', validate({ params: z.object({ issueId: id }) }), attachmentsController.list);
+router.post('/', validate({ params: z.object({ issueId: id }) }), upload.single('file'), auditLogger('attachment.create'), attachmentsController.create);
+router.get('/:attachmentId/url', validate({ params: z.object({ issueId: id, attachmentId: id }) }), attachmentsController.url);
+router.delete('/:attachmentId', validate({ params: z.object({ issueId: id, attachmentId: id }) }), auditLogger('attachment.delete'), attachmentsController.remove);
+export default router;

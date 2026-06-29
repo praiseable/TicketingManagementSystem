@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { commentsController } from '../controllers/comments.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id, commentSchemas } from '../schemas/index.js';
+const router = Router({ mergeParams: true });
+router.get('/', validate({ params: z.object({ issueId: id }) }), commentsController.list);
+router.post('/', validate({ params: z.object({ issueId: id }), body: commentSchemas.body }), auditLogger('comment.create'), commentsController.create);
+router.patch('/:commentId', validate({ params: z.object({ issueId: id, commentId: id }), body: commentSchemas.body }), auditLogger('comment.update'), commentsController.update);
+router.delete('/:commentId', validate({ params: z.object({ issueId: id, commentId: id }) }), auditLogger('comment.delete'), commentsController.remove);
+export default router;

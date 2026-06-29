@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { spacesController } from '../controllers/spaces.controller.js';
+import { pagesController } from '../controllers/pages.controller.js';
+import { validate } from '../middleware/validate.js';
+import { auditLogger } from '../middleware/auditLogger.js';
+import { id, spaceSchemas } from '../schemas/index.js';
+const router = Router();
+router.get('/', spacesController.list);
+router.post('/', validate({ body: spaceSchemas.create }), auditLogger('space.create'), spacesController.create);
+router.get('/:spaceId', validate({ params: z.object({ spaceId: id }) }), spacesController.get);
+router.patch('/:spaceId', validate({ params: z.object({ spaceId: id }), body: spaceSchemas.update }), auditLogger('space.update'), spacesController.update);
+router.delete('/:spaceId', validate({ params: z.object({ spaceId: id }) }), auditLogger('space.delete'), spacesController.remove);
+router.get('/shared/:token', pagesController.shared);
+export default router;
