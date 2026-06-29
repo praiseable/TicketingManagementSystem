@@ -31,10 +31,44 @@ export const projectSchemas = {
 };
 
 export const issueSchemas = {
-  create: z.object({ issueTypeId: id.optional(), workflowStatusId: id.optional(), title: z.string().min(2), description: z.string().optional(), priority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE']).default('MEDIUM'), assigneeId: id.nullable().optional(), labels: z.array(z.string()).optional(), customFields: z.record(z.string()).optional(), storyPoints: z.number().int().nullable().optional(), dueDate: z.string().nullable().optional() }),
-  update: z.object({ title: z.string().min(2).optional(), description: z.string().nullable().optional(), priority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE']).optional(), assigneeId: id.nullable().optional(), issueTypeId: id.optional(), workflowStatusId: id.optional(), sprintId: id.nullable().optional(), storyPoints: z.number().int().nullable().optional(), originalEstimate: z.number().int().nullable().optional(), remainingEstimate: z.number().int().nullable().optional(), dueDate: z.string().nullable().optional(), customFields: z.record(z.string().nullable()).optional(), labels: z.array(z.string()).optional() }),
+  create: z.object({
+    issueTypeId: id.optional(),
+    workflowStatusId: id.optional(),
+    title: z.string().min(2),
+    description: z.string().nullable().optional(),
+    priority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE']).default('MEDIUM'),
+    assigneeId: id.nullable().optional(),
+    parentId: id.nullable().optional(),
+    sprintId: id.nullable().optional(),
+    labels: z.union([z.array(z.string()), z.string()]).optional(),
+    customFields: z.record(z.unknown()).optional(),
+    storyPoints: z.coerce.number().int().nullable().optional(),
+    originalEstimate: z.coerce.number().int().nullable().optional(),
+    remainingEstimate: z.coerce.number().int().nullable().optional(),
+    dueDate: z.string().nullable().optional()
+  }),
+  update: z.object({
+    title: z.string().min(2).optional(),
+    description: z.string().nullable().optional(),
+    priority: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE']).optional(),
+    assigneeId: id.nullable().optional(),
+    issueTypeId: id.optional(),
+    workflowStatusId: id.optional(),
+    parentId: id.nullable().optional(),
+    sprintId: id.nullable().optional(),
+    storyPoints: z.coerce.number().int().nullable().optional(),
+    originalEstimate: z.coerce.number().int().nullable().optional(),
+    remainingEstimate: z.coerce.number().int().nullable().optional(),
+    dueDate: z.string().nullable().optional(),
+    customFields: z.record(z.unknown()).optional(),
+    labels: z.union([z.array(z.string()), z.string()]).optional()
+  }),
   transition: z.object({ toStatusId: id, comment: z.string().optional() }),
-  link: z.object({ targetIssueId: id.optional(), targetIssueKey: z.string().min(2).optional(), type: z.enum(['BLOCKS', 'BLOCKED_BY', 'DUPLICATES', 'DUPLICATED_BY', 'RELATES_TO', 'CLONES']) }).refine((v) => Boolean(v.targetIssueId || v.targetIssueKey), { message: 'targetIssueId or targetIssueKey is required' }),
+  link: z.object({
+    targetIssueId: id.optional(),
+    targetIssueKey: z.string().min(2).optional(),
+    type: z.enum(['BLOCKS', 'BLOCKED_BY', 'DUPLICATES', 'DUPLICATED_BY', 'RELATES_TO', 'CLONES'])
+  }).refine((v) => Boolean(v.targetIssueId || v.targetIssueKey), { message: 'targetIssueId or targetIssueKey is required' }),
   bulk: z.object({ issueIds: z.array(id).min(1), action: z.enum(['ASSIGN', 'LABEL', 'STATUS', 'PRIORITY', 'DELETE']), value: z.unknown().optional() })
 };
 

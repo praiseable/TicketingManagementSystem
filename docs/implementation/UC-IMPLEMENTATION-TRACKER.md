@@ -157,3 +157,71 @@ Smoke evidence:
 - dev1@acme.com invited and added as project member
 - dev1@acme.com role changed from MEMBER to ADMIN
 - dev1@acme.com removed from project
+
+## Feature Pack 06 — UC-08 to UC-16 Issue Tracker Depth
+
+Status: IMPLEMENTED-PENDING-SMOKE
+
+Scope:
+
+- UC-08 Create issue with issue type, title, description, priority, assignee, labels, estimates, due date, and custom field values
+- UC-09 Edit issue with automatic IssueHistory changelog rows
+- UC-10 Delete issue and cascade sub-tasks
+- UC-11 Assign issue and emit assignment notification
+- UC-12 Create sub-task via parentId
+- UC-13 Link issues by key or ID
+- UC-14 Add comment with @email mention notification
+- UC-15 Upload attachment through MinIO and return presigned URL
+- UC-16 View issue history / changelog
+
+Verification:
+
+```bash
+./scripts/smoke-uc08-16-issues.sh
+```
+
+## Hotfix — UC-15 Attachment Upload Stabilization
+
+Status: APPLIED
+
+Changes:
+
+- Attachment API serializes BigInt `sizeBytes` safely.
+- Attachment list/create responses include uploader summary.
+- Attachment create writes IssueHistory entry `attachment.added`.
+- Attachment delete removes MinIO object, deletes DB record, and writes `attachment.removed` history.
+- Storage service checks/creates MinIO bucket and returns clear storage errors.
+- Smoke script prints attachment response body when upload fails.
+
+## Checkpoint — UC-08 to UC-16 Issue Tracker Completion
+
+Date: 2026-06-29
+
+Status:
+
+- UC-08 Create issue with type, fields, priority, labels, custom field values: DONE
+- UC-09 Edit issue and write changelog/history: DONE
+- UC-10 Delete issue and cascade sub-task: DONE
+- UC-11 Assign issue and trigger notification path: DONE
+- UC-12 Create sub-task using parent issue: DONE
+- UC-13 Link issues by relationship type: DONE
+- UC-14 Add comment with @mention notification: DONE
+- UC-15 Attach file through MinIO and return presigned URL: DONE
+- UC-16 View full issue history/changelog: DONE
+
+Verified through:
+
+- scripts/smoke-uc08-16-issues.sh
+
+Smoke evidence:
+
+- Issue created with custom field values, labels, priority, estimates, and due date
+- Issue update wrote history for title, description, priority, assignee, and labels
+- Sub-task created and deleted with parent
+- Issue link created
+- Comment created with @dev1@acme.com mention
+- Mention notification count verified in database
+- File uploaded to MinIO and presigned URL generated
+- Full detail and history verified
+- Parent issue delete returned 204
+- Deleted parent and subtask returned 404

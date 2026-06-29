@@ -1,6 +1,4 @@
-import type { NextFunction, Request, RequestHandler, Response } from 'express';
-
-export type AppRequest = Request<Record<string, string>, unknown, any, any>;
+import type { NextFunction, Request, Response } from 'express';
 
 export class AppError extends Error {
   constructor(
@@ -16,10 +14,12 @@ export class AppError extends Error {
 function toJsonSafe(value: unknown): unknown {
   if (typeof value === 'bigint') return Number(value);
   if (value instanceof Date) return value.toISOString();
-  if (Array.isArray(value)) return value.map(toJsonSafe);
+  if (Array.isArray(value)) return value.map((item) => toJsonSafe(item));
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(value as Record<string, unknown>)) out[key] = toJsonSafe(val);
+    for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = toJsonSafe(item);
+    }
     return out;
   }
   return value;
@@ -38,7 +38,7 @@ export function noContent(res: Response) {
 }
 
 export const asyncHandler =
-  (fn: (req: AppRequest, res: Response, next: NextFunction) => Promise<unknown> | unknown): RequestHandler =>
+  <T extends (req: Request, res: Response, next: NextFunction) => Promise<unknown>>(fn: T) =>
   (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req as AppRequest, res, next)).catch(next);
+    Promise.resolve(fn(req, res, next)).catch(next);
   };

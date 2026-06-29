@@ -20,7 +20,7 @@ router.get('/', requireProjectRole(ProjectRole.MEMBER), issuesController.list);
 router.post('/', requireProjectRole(ProjectRole.MEMBER), validate({ params: projectParams, body: issueSchemas.create }), auditLogger('issue.create'), issuesController.create);
 router.get('/:issueId', requireProjectRole(ProjectRole.MEMBER), validate({ params: issueParams }), issuesController.get);
 router.patch('/:issueId', requireProjectRole(ProjectRole.MEMBER), validate({ params: issueParams, body: issueSchemas.update }), auditLogger('issue.update'), issuesController.update);
-router.delete('/:issueId', requireProjectRole(ProjectRole.ADMIN), validate({ params: issueParams }), auditLogger('issue.delete'), issuesController.remove);
+router.delete('/:issueId', requireProjectRole(ProjectRole.MEMBER), validate({ params: issueParams }), auditLogger('issue.delete'), issuesController.remove);
 router.post('/:issueId/transition', requireProjectRole(ProjectRole.MEMBER), validate({ params: issueParams, body: issueSchemas.transition }), auditLogger('issue.transition'), issuesController.transition);
 router.post('/:issueId/link', requireProjectRole(ProjectRole.MEMBER), validate({ params: issueParams, body: issueSchemas.link }), auditLogger('issue.link'), issuesController.link);
 router.delete('/:issueId/link/:linkId', requireProjectRole(ProjectRole.MEMBER), validate({ params: z.object({ projectId: id, issueId: id, linkId: id }).passthrough() }), auditLogger('issue.unlink'), issuesController.unlink);
