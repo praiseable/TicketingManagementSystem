@@ -563,6 +563,7 @@ model Sprint {
   projectId   String        @db.Uuid
   name        String
   goal        String?       @db.Text
+  capacity    Int?          @default(0)
   status      SprintStatus  @default(DRAFT)
   startDate   DateTime
   endDate     DateTime

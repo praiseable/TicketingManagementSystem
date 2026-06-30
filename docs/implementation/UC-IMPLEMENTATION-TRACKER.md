@@ -352,3 +352,52 @@ Smoke evidence:
 - Notification preferences loaded/updated
 - Issue filters returned correct filtered results
 - Saved filter create/list/delete flow verified
+
+
+## Feature Pack 09 — UC-25 to UC-29 Sprint / Backlog Implementation
+
+Date: 2026-06-29
+
+Status after applying pack:
+
+- UC-25 Create sprint: implemented, smoke pending
+- UC-26 Start sprint: implemented, smoke pending
+- UC-27 Add issue to sprint: implemented, smoke pending
+- UC-28 Complete sprint: implemented, smoke pending
+- UC-29 View backlog: implemented, smoke pending
+
+Verification script:
+
+- scripts/smoke-uc25-29-sprints-backlog.sh
+
+## Checkpoint — UC-25 to UC-29 Sprint / Backlog Completion
+
+Date: 2026-06-30
+
+Status:
+
+- UC-25 Create sprint: DONE
+- UC-26 Start sprint: DONE
+- UC-27 Add issue to sprint: DONE
+- UC-28 Complete sprint: DONE
+- UC-29 View backlog: DONE
+
+Verified through:
+
+- scripts/smoke-uc25-29-sprints-backlog.sh
+
+Smoke evidence:
+
+- Project created for sprint/backlog smoke test
+- Backlog issues created successfully
+- Sprint created with capacity
+- Backlog returned expected unsprinted issues
+- Selected issues moved from backlog to sprint
+- Sprint started successfully
+- Single active sprint guard verified
+- One issue transitioned to Done before completion
+- Sprint completed successfully
+- Completed issue counted correctly
+- Incomplete issues moved to next sprint
+- Burndown endpoint returned data
+- Velocity endpoint returned data

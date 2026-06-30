@@ -21,7 +21,7 @@ export interface Comment { id: ID; issueId: ID; user: User; body: string; parent
 export interface Attachment { id: ID; issueId?: ID | null; filename: string; mimeType: string; sizeBytes: number; bucketKey: string; createdAt: string; user?: User }
 export interface Worklog { id: ID; issueId: ID; user?: User; timeSpent: number; dateStarted: string; description?: string | null }
 export interface TimerSession { issueId: ID; userId: ID; startedAt: string; accumulatedSeconds: number; elapsedSeconds?: number; status: 'ACTIVE' | 'PAUSED' }
-export interface Sprint { id: ID; projectId: ID; name: string; goal?: string | null; status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'; startDate: string; endDate: string; issues?: Issue[] }
+export interface Sprint { id: ID; projectId: ID; name: string; goal?: string | null; capacity?: number | null; status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'; startDate: string; endDate: string; completedAt?: string | null; issues?: Issue[]; committedStoryPoints?: number; completedStoryPoints?: number; _count?: { issues?: number; sprintIssues?: number } }
 export interface PerformanceSnapshot { id: ID; userId: ID; projectId?: ID | null; periodType: string; periodKey: string; issuesAssigned: number; issuesCompleted: number; issuesCreated: number; timeLoggedSeconds: number; onTimePct: number; storyPointsDelivered: number; estimateAccuracyPct?: number | null }
 export interface Notification { id: ID; type: string; title: string; body: string; entityType: string; entityId: string; isRead: boolean; createdAt: string }
 export interface Space { id: ID; orgId: ID; type: 'TEAM' | 'PROJECT' | 'PERSONAL'; name: string; key: string; description?: string | null; iconUrl?: string | null; _count?: { pages: number } }

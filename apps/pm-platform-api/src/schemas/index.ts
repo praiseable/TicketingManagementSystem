@@ -100,8 +100,28 @@ export const typeSchemas = {
 };
 
 export const commentSchemas = { body: z.object({ body: z.string().min(1), parentId: id.optional() }) };
-export const sprintSchemas = { create: z.object({ name: z.string().min(2), goal: z.string().nullable().optional(), startDate: z.string().datetime(), endDate: z.string().datetime(), capacity: z.number().optional() }), update: z.object({ name: z.string().min(2).optional(), goal: z.string().nullable().optional(), startDate: z.string().datetime().optional(), endDate: z.string().datetime().optional(), status: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED']).optional() }), complete: z.object({ moveToSprintId: id.nullable().optional() }) };
-export const backlogSchemas = { reorder: z.object({ issueId: id, newPosition: z.number() }), moveToSprint: z.object({ issueIds: z.array(id).min(1), sprintId: id }) };
+export const sprintSchemas = {
+  create: z.object({
+    name: z.string().min(2),
+    goal: z.string().nullable().optional(),
+    startDate: z.string().min(1),
+    endDate: z.string().min(1),
+    capacity: z.coerce.number().int().min(0).optional()
+  }),
+  update: z.object({
+    name: z.string().min(2).optional(),
+    goal: z.string().nullable().optional(),
+    startDate: z.string().min(1).optional(),
+    endDate: z.string().min(1).optional(),
+    capacity: z.coerce.number().int().min(0).optional(),
+    status: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED']).optional()
+  }),
+  complete: z.object({ moveToSprintId: id.nullable().optional() })
+};
+export const backlogSchemas = {
+  reorder: z.object({ issueId: id, newPosition: z.coerce.number() }),
+  moveToSprint: z.object({ issueIds: z.array(id).min(1), sprintId: id.nullable().optional() })
+};
 export const worklogSchemas = { create: z.object({ timeSpent: z.number().int().positive(), dateStarted: z.string().datetime(), description: z.string().nullable().optional() }), update: z.object({ timeSpent: z.number().int().positive().optional(), dateStarted: z.string().datetime().optional(), description: z.string().nullable().optional() }) };
 export const timerSchemas = { issue: z.object({ issueId: id }) };
 export const notificationSchemas = { prefs: z.object({ prefs: z.array(z.object({ eventType: z.string(), inApp: z.boolean(), email: z.boolean() })) }) };
