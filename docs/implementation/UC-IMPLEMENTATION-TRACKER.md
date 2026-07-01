@@ -461,3 +461,39 @@ Status:
 Verification script:
 
 - scripts/smoke-uc35-38-time-tracking.sh
+
+## Checkpoint — UC-35 to UC-38 Time Tracking / Live Timer Completion
+
+Date: 2026-07-01
+
+Status:
+
+- UC-35 Log work on issue: DONE
+- UC-36 Start live timer: DONE
+- UC-36 Pause live timer: DONE
+- UC-36 Resume live timer: DONE
+- UC-37 Stop and save timer: DONE
+- UC-38 Edit worklog: DONE
+- UC-38 Delete worklog: DONE
+
+Verified through:
+
+- scripts/smoke-uc35-38-time-tracking.sh
+
+Smoke evidence:
+
+- Manual worklog created successfully
+- Remaining estimate recalculated after manual worklog
+- IssueHistory wrote worklog.created entry
+- Worklog edited successfully
+- Remaining estimate recalculated after worklog edit
+- IssueHistory wrote worklog.updated entry
+- Live timer started and appeared in active timer list
+- Timer paused successfully
+- Timer resumed successfully
+- Timer stopped and saved as worklog
+- Timer removed from active timer list after stop
+- IssueHistory wrote timer lifecycle entries
+- Timer-generated worklog verified
+- Worklog deleted successfully
+- IssueHistory wrote worklog.deleted entry
