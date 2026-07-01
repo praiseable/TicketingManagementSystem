@@ -446,3 +446,18 @@ Smoke evidence:
 - Swimlane summary by priority returned data
 - Swimlane summary by label returned data
 - Swimlane summary by status returned data
+
+## Checkpoint — UC-35 to UC-38 Time Tracking Completion
+
+Date: pending smoke verification
+
+Status:
+
+- UC-35 Log work on issue: IMPLEMENTED, PENDING SMOKE
+- UC-36 Start live timer: IMPLEMENTED, PENDING SMOKE
+- UC-37 Stop and save timer: IMPLEMENTED, PENDING SMOKE
+- UC-38 Edit worklog: IMPLEMENTED, PENDING SMOKE
+
+Verification script:
+
+- scripts/smoke-uc35-38-time-tracking.sh

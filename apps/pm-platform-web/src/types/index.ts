@@ -19,8 +19,8 @@ export interface Issue { id: ID; key: string; number: number; projectId: ID; iss
 export interface IssueLink { id: ID; type: string; sourceIssueId: ID; targetIssueId: ID; sourceIssue?: Issue; targetIssue?: Issue; createdBy?: User; createdAt: string }
 export interface Comment { id: ID; issueId: ID; user: User; body: string; parentId?: ID | null; isEdited: boolean; createdAt: string; updatedAt: string; replies?: Comment[] }
 export interface Attachment { id: ID; issueId?: ID | null; filename: string; mimeType: string; sizeBytes: number; bucketKey: string; createdAt: string; user?: User }
-export interface Worklog { id: ID; issueId: ID; user?: User; timeSpent: number; dateStarted: string; description?: string | null }
-export interface TimerSession { issueId: ID; userId: ID; startedAt: string; accumulatedSeconds: number; elapsedSeconds?: number; status: 'ACTIVE' | 'PAUSED' }
+export interface Worklog { id: ID; issueId: ID; user?: User; issue?: { id: ID; key: string; title: string; projectId: ID }; timeSpent: number; dateStarted: string; description?: string | null; createdAt?: string; updatedAt?: string }
+export interface TimerSession { issueId: ID; userId: ID; startedAt: string; accumulatedSeconds: number; elapsedSeconds?: number; status: 'ACTIVE' | 'PAUSED'; issue?: { id: ID; key: string; title: string; projectId: ID } }
 export interface Sprint { id: ID; projectId: ID; name: string; goal?: string | null; capacity?: number | null; status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'; startDate: string; endDate: string; completedAt?: string | null; issues?: Issue[]; committedStoryPoints?: number; completedStoryPoints?: number; _count?: { issues?: number; sprintIssues?: number } }
 export interface PerformanceSnapshot { id: ID; userId: ID; projectId?: ID | null; periodType: string; periodKey: string; issuesAssigned: number; issuesCompleted: number; issuesCreated: number; timeLoggedSeconds: number; onTimePct: number; storyPointsDelivered: number; estimateAccuracyPct?: number | null }
 export interface Notification { id: ID; type: string; title: string; body: string; entityType: string; entityId: string; isRead: boolean; createdAt: string }

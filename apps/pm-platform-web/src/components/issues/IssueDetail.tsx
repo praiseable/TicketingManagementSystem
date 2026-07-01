@@ -123,7 +123,7 @@ export function IssueDetail({ projectId, issueId }: { projectId: string; issueId
         <div className="rounded-xl border bg-card p-4"><h3 className="mb-2 font-semibold">Custom fields</h3>{issue.customFieldValues?.length ? issue.customFieldValues.map((field: any) => <div key={field.id} className="mb-2 rounded-md border p-2 text-sm"><span className="text-muted-foreground">{field.customField?.name ?? field.customFieldId}</span><div>{field.value ?? '—'}</div></div>) : <p className="text-sm text-muted-foreground">No custom fields configured.</p>}</div>
         <TimeProgress logged={logged} estimate={issue.originalEstimate} />
         <LiveTimer issueId={issue.id} />
-        <div className="rounded-xl border bg-card p-4"><h3 className="mb-2 font-semibold">Worklogs</h3><WorklogList worklogs={issue.worklogs} /></div>
+        <div className="rounded-xl border bg-card p-4"><h3 className="mb-2 font-semibold">Worklogs</h3><WorklogList issueId={issue.id} worklogs={issue.worklogs} /></div>
         <div className="rounded-xl border bg-card p-4"><h3 className="mb-2 font-semibold">Watchers</h3><div className="space-y-1 text-sm">{issue.watchers?.map((w: any) => <div key={w.id} className="rounded-md border px-2 py-1">{w.user?.name ?? w.userId}</div>)}{!issue.watchers?.length && <p className="text-muted-foreground">No watchers yet.</p>}</div></div>
       </aside>
     </div>
