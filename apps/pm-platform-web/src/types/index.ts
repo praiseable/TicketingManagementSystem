@@ -31,3 +31,74 @@ export interface IssueHistory { id: ID; field: string; oldValue?: string | null;
 
 export interface ProjectMember { id: ID; projectId: ID; userId: ID; role: ProjectRole; createdAt?: string; user?: User }
 export interface Invitation { id: ID; orgId: ID; projectId?: ID | null; email: string; role: ProjectRole; expiresAt: string; acceptedAt?: string | null; devToken?: string }
+
+
+export interface PerformanceSummary {
+  issuesAssigned: number;
+  issuesCompleted: number;
+  issuesCreated: number;
+  timeLoggedSeconds: number;
+  hoursLogged: number;
+  onTimePct: number;
+  storyPointsDelivered: number;
+  estimateAccuracyPct?: number | null;
+  avgResolutionSeconds?: number | null;
+  bugRate?: number | null;
+  worklogCount?: number;
+}
+
+export interface PerformanceActivity {
+  type: string;
+  action: string;
+  issue?: { id: ID; key: string; title: string; projectId: ID };
+  at: string;
+  detail?: string | null;
+  seconds?: number;
+}
+
+export interface DailyTimeRow { date: string; seconds: number; hours: number }
+
+export interface MyPerformanceResponse {
+  user: Pick<User, 'id' | 'email' | 'name'>;
+  range: { period: string; periodType: string; periodKey: string; from: string; to: string };
+  projectIds: ID[];
+  summary: PerformanceSummary;
+  dailyTime: DailyTimeRow[];
+  recentActivity: PerformanceActivity[];
+  snapshot?: PerformanceSnapshot | null;
+  snapshots?: PerformanceSnapshot[];
+}
+
+export interface TeamPerformanceRow {
+  user: User;
+  projectRole: ProjectRole;
+  summary: PerformanceSummary;
+  dailyTime: DailyTimeRow[];
+}
+
+export interface TeamPerformanceResponse {
+  project?: { id: ID; key: string; name: string } | null;
+  range: { period: string; periodType: string; periodKey: string; from: string; to: string };
+  rows: TeamPerformanceRow[];
+  totals: PerformanceSummary & { members: number };
+}
+
+export interface TimeReportGroup { key: string; label: string; timeSpent: number; hours: number; worklogCount: number }
+export interface TimeReportRow {
+  id: ID;
+  user: User;
+  project: { id: ID; key: string; name: string };
+  issue: { id: ID; key: string; title: string };
+  issueType: { id: ID; name: string };
+  timeSpent: number;
+  hours: number;
+  dateStarted: string;
+  description?: string | null;
+}
+export interface TimeReportResponse {
+  range: { period: string; periodType: string; periodKey: string; from: string; to: string };
+  filters: { projectId?: string | null; userId?: string | null; groupBy: string };
+  summary: { worklogCount: number; timeLoggedSeconds: number; hoursLogged: number };
+  grouped: TimeReportGroup[];
+  rows: TimeReportRow[];
+}

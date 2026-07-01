@@ -497,3 +497,17 @@ Smoke evidence:
 - Timer-generated worklog verified
 - Worklog deleted successfully
 - IssueHistory wrote worklog.deleted entry
+
+## Checkpoint — UC-39 to UC-41 Performance / Reports Completion
+
+Date: pending smoke verification
+
+Status:
+
+- UC-39 View individual dashboard: IMPLEMENTED, PENDING SMOKE
+- UC-40 View team dashboard: IMPLEMENTED, PENDING SMOKE
+- UC-41 Export time report: IMPLEMENTED, PENDING SMOKE
+
+Verification script:
+
+- scripts/smoke-uc39-41-performance-reports.sh
