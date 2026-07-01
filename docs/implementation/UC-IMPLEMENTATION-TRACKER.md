@@ -511,3 +511,29 @@ Status:
 Verification script:
 
 - scripts/smoke-uc39-41-performance-reports.sh
+
+## Checkpoint — UC-42 to UC-44 Search / Filters Completion
+
+Date: 2026-07-01
+
+Status:
+
+- UC-42 Search issues: DONE
+- UC-43 Apply GUI filters: DONE
+- UC-44 Save filter: DONE
+
+Verified through:
+
+- scripts/smoke-uc42-44-search-filters.sh
+
+Smoke evidence:
+
+- Test project created successfully
+- Test issue created successfully
+- Search reindex endpoint executed successfully
+- Global search returned the created issue
+- Issue GUI filters returned the expected issue
+- Saved filter created successfully
+- Saved filter listed successfully
+- Saved filter deleted successfully
+- Meilisearch empty-result fallback to PostgreSQL verified
