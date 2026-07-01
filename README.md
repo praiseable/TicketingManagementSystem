@@ -121,7 +121,8 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 ### Phase 2 Current Result
 
 Completed so far: UC-25 to UC-50  
-Next block: Phase 3 — UC-51 to UC-73
+Completed so far: UC-51 to UC-55
+Next block: UC-56 to UC-64
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -131,11 +132,11 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 
 | UC | Use Case | Status | Verification |
 |---|---|---|---|
-| UC-51 | Create space | PLANNED | Phase 3 |
-| UC-52 | Create page | PLANNED | Phase 3 |
-| UC-53 | Edit page rich text | PLANNED | Phase 3 |
-| UC-54 | Collaborative editing | PLANNED | Phase 3 |
-| UC-55 | Page versioning | PLANNED | Phase 3 |
+| UC-51 | Create space | DONE | scripts/smoke-uc51-55-docs.sh |
+| UC-52 | Create page | DONE | scripts/smoke-uc51-55-docs.sh |
+| UC-53 | Edit page rich text | DONE | scripts/smoke-uc51-55-docs.sh |
+| UC-54 | Collaborative editing baseline | DONE | scripts/smoke-uc51-55-docs.sh |
+| UC-55 | Page versioning | DONE | scripts/smoke-uc51-55-docs.sh |
 | UC-56 | Restrict page access | PLANNED | Phase 3 |
 | UC-57 | Use page template | PLANNED | Phase 3 |
 | UC-58 | Embed Jira issue in page | PLANNED | Phase 3 |

@@ -24,8 +24,8 @@ export interface TimerSession { issueId: ID; userId: ID; startedAt: string; accu
 export interface Sprint { id: ID; projectId: ID; name: string; goal?: string | null; capacity?: number | null; status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'; startDate: string; endDate: string; completedAt?: string | null; issues?: Issue[]; committedStoryPoints?: number; completedStoryPoints?: number; _count?: { issues?: number; sprintIssues?: number } }
 export interface PerformanceSnapshot { id: ID; userId: ID; projectId?: ID | null; periodType: string; periodKey: string; issuesAssigned: number; issuesCompleted: number; issuesCreated: number; timeLoggedSeconds: number; onTimePct: number; storyPointsDelivered: number; estimateAccuracyPct?: number | null }
 export interface Notification { id: ID; type: string; title: string; body: string; entityType: string; entityId: string; isRead: boolean; createdAt: string }
-export interface Space { id: ID; orgId: ID; type: 'TEAM' | 'PROJECT' | 'PERSONAL'; name: string; key: string; description?: string | null; iconUrl?: string | null; _count?: { pages: number } }
-export interface Page { id: ID; spaceId: ID; parentId?: ID | null; title: string; slug: string; content: string; contentJson: unknown; version: number; isArchived: boolean; createdAt: string; updatedAt: string; comments?: unknown[]; versions?: unknown[] }
+export interface Space { id: ID; orgId: ID; type: 'TEAM' | 'PROJECT' | 'PERSONAL'; name: string; key: string; description?: string | null; iconUrl?: string | null; owner?: User; members?: SpaceMember[]; _count?: { pages: number } }
+export interface Page { id: ID; spaceId: ID; parentId?: ID | null; title: string; slug: string; content: string; contentJson: unknown; version: number; isArchived: boolean; createdAt: string; updatedAt: string; comments?: unknown[]; versions?: PageVersion[]; createdBy?: User; updatedBy?: User; _count?: { children?: number; comments?: number; versions?: number } }
 export interface IssueHistory { id: ID; field: string; oldValue?: string | null; newValue?: string | null; user?: User; createdAt: string }
 
 
@@ -102,3 +102,6 @@ export interface TimeReportResponse {
   grouped: TimeReportGroup[];
   rows: TimeReportRow[];
 }
+
+export interface SpaceMember { id: ID; spaceId: ID; userId: ID; role: 'OWNER' | 'EDITOR' | 'VIEWER'; user?: User; createdAt?: string }
+export interface PageVersion { id: ID; pageId: ID; version: number; content: string; contentJson: unknown; createdBy?: User; createdAt: string }

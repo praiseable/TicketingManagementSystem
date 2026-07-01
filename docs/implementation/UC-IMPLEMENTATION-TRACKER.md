@@ -592,3 +592,36 @@ Smoke evidence:
 - Audit log returned admin user actions
 - Audit action verification passed
 - Audit filters by entity/user/date returned expected records
+
+## Checkpoint — UC-51 to UC-55 Docs Foundation Completion
+
+Date: 2026-07-01
+
+Status:
+
+- UC-51 Create space: DONE
+- UC-52 Create page: DONE
+- UC-53 Edit page with rich text baseline: DONE
+- UC-54 Collaborative editing baseline: DONE
+- UC-55 Page versioning and restore: DONE
+
+Verified through:
+
+- scripts/smoke-uc51-55-docs.sh
+
+Smoke evidence:
+
+- Admin login succeeded
+- Documentation space created successfully
+- Space list and get endpoints returned the created space
+- Space member/editor added successfully
+- Parent page created successfully from requirements template
+- Child page created successfully
+- Page tree returned parent and child pages
+- Rich content update succeeded
+- Collaboration state/presence baseline verified
+- Second-user editor update baseline verified
+- Page versions returned successfully
+- Page version verification passed
+- Restore from previous version succeeded
+- Restore verification passed
