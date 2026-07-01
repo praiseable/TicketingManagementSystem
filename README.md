@@ -105,9 +105,9 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 | UC-36 | Start live timer | DONE | scripts/smoke-uc35-38-time-tracking.sh |
 | UC-37 | Stop and save timer | DONE | scripts/smoke-uc35-38-time-tracking.sh |
 | UC-38 | Edit worklog | DONE | scripts/smoke-uc35-38-time-tracking.sh |
-| UC-39 | View individual dashboard | NEXT | Feature Pack 12 |
-| UC-40 | View team dashboard | NEXT | Feature Pack 12 |
-| UC-41 | Export time report | NEXT | Feature Pack 12 |
+| UC-39 | View individual dashboard | DONE | scripts/smoke-uc39-41-performance-reports.sh |
+| UC-40 | View team dashboard | DONE | scripts/smoke-uc39-41-performance-reports.sh |
+| UC-41 | Export time report | DONE | scripts/smoke-uc39-41-performance-reports.sh |
 | UC-42 | Search issues | PLANNED | Feature Pack 13 |
 | UC-43 | Apply GUI filters | PLANNED | Feature Pack 13 |
 | UC-44 | Save filter | PLANNED | Feature Pack 13 |
@@ -120,8 +120,8 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 
 ### Phase 2 Current Result
 
-Completed so far: UC-25 to UC-38  
-Next block: UC-39 to UC-41
+Completed so far: UC-25 to UC-41  
+Next block: UC-42 to UC-44
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -176,7 +176,7 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 ## Current Verified Milestone
 
 Phase 1: COMPLETE  
-Phase 2: UC-25 to UC-38 COMPLETE  
-Next: UC-39 to UC-41 Performance Dashboards + Time Reports
+Phase 2: UC-25 to UC-41 COMPLETE  
+Next: UC-42 to UC-44 Search Issues + GUI Filters + Saved Filters
 
 <!-- TMS_USE_CASE_STATUS_END -->
