@@ -417,3 +417,32 @@ Use cases:
 Verification script:
 
 - scripts/smoke-uc30-34-story-reports-board.sh
+
+## Checkpoint — UC-30 to UC-34 Story Points / Reports / Board Completion
+
+Date: 2026-06-30
+
+Status:
+
+- UC-30 Estimate story points: DONE
+- UC-31 View burndown chart: DONE
+- UC-32 View velocity report: DONE
+- UC-33 Set WIP limit: DONE
+- UC-34 View board swimlanes: DONE
+
+Verified through:
+
+- scripts/smoke-uc30-34-story-reports-board.sh
+
+Smoke evidence:
+
+- Story points updated successfully
+- Story point change wrote issue history
+- WIP limit updated and persisted
+- Sprint reporting data prepared successfully
+- Burndown endpoint returned chart data
+- Velocity endpoint returned chart data
+- Swimlane summary by assignee returned data
+- Swimlane summary by priority returned data
+- Swimlane summary by label returned data
+- Swimlane summary by status returned data
