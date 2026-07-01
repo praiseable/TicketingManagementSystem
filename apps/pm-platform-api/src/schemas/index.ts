@@ -133,3 +133,32 @@ export const spaceSchemas = { create: z.object({ type: z.enum(['TEAM', 'PROJECT'
 export const pageSchemas = { create: z.object({ title: z.string().min(1), parentId: id.nullable().optional(), content: z.string().optional(), contentJson: z.unknown().optional() }), update: z.object({ title: z.string().min(1).optional(), content: z.string().optional(), contentJson: z.unknown().optional(), parentId: id.nullable().optional(), publishedAt: z.string().datetime().nullable().optional() }) };
 export const searchSchemas = { saveFilter: z.object({ name: z.string().min(2), projectId: id.optional(), filters: z.record(z.unknown()).default({}), jql: z.string().optional() }) };
 
+
+
+export const githubSchemas = {
+  commit: z.object({
+    sha: z.string().min(6),
+    message: z.string().min(1),
+    url: z.string().url().optional(),
+    author: z.string().optional(),
+    repo: z.string().optional(),
+    branch: z.string().optional()
+  }),
+  commits: z.object({
+    commits: z.array(z.object({
+      sha: z.string().min(6).optional(),
+      id: z.string().min(6).optional(),
+      message: z.string().min(1),
+      url: z.string().url().optional(),
+      html_url: z.string().url().optional(),
+      author: z.unknown().optional(),
+      repo: z.string().optional(),
+      branch: z.string().optional()
+    })).min(1).optional(),
+    sha: z.string().min(6).optional(),
+    id: z.string().min(6).optional(),
+    message: z.string().min(1).optional(),
+    url: z.string().url().optional(),
+    repository: z.unknown().optional()
+  }).passthrough()
+};

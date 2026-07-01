@@ -67,7 +67,7 @@ export function ProjectSettingsPage() {
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 className="text-3xl font-bold">{project.data?.name ?? 'Project'} settings</h1>
-        <p className="text-sm text-muted-foreground">Configure UC-17 custom fields, UC-18 issue types, UC-20 workflows, UC-21 guards, and project members.</p>
+        <p className="text-sm text-muted-foreground">Configure project members, custom fields, issue types, workflows, guards, WIP limits, webhooks, and integration settings.</p>
       </div>
       <Button variant="outline" asChild><Link to={`/projects/${id}/issues`}>Open issues</Link></Button>
     </div>

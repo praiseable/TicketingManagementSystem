@@ -111,17 +111,17 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 | UC-42 | Search issues | DONE | scripts/smoke-uc42-44-search-filters.sh |
 | UC-43 | Apply GUI filters | DONE | scripts/smoke-uc42-44-search-filters.sh |
 | UC-44 | Save filter | DONE | scripts/smoke-uc42-44-search-filters.sh |
-| UC-45 | Receive email notification | PLANNED | Feature Pack 14 |
-| UC-46 | Configure notification preferences | PLANNED | Feature Pack 14 |
-| UC-47 | Configure webhook | PLANNED | Feature Pack 14 |
-| UC-48 | Link GitHub commit | PLANNED | Feature Pack 14 |
+| UC-45 | Receive email notification | DONE | scripts/smoke-uc45-48-integrations.sh |
+| UC-46 | Configure notification preferences | DONE | scripts/smoke-uc45-48-integrations.sh |
+| UC-47 | Configure webhook | DONE | scripts/smoke-uc45-48-integrations.sh |
+| UC-48 | Link GitHub commit | DONE | scripts/smoke-uc45-48-integrations.sh |
 | UC-49 | Manage users admin | PLANNED | Feature Pack 15 |
 | UC-50 | View audit log | PLANNED | Feature Pack 15 |
 
 ### Phase 2 Current Result
 
-Completed so far: UC-25 to UC-44  
-Next block: UC-45 to UC-48
+Completed so far: UC-25 to UC-48  
+Next block: UC-49 to UC-50
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -176,7 +176,7 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 ## Current Verified Milestone
 
 Phase 1: COMPLETE  
-Phase 2: UC-25 to UC-44 COMPLETE  
-Next: UC-45 to UC-48 Email Notifications + Preferences + Webhooks + GitHub Commit Linking
+Phase 2: UC-25 to UC-48 COMPLETE  
+Next: UC-49 to UC-50 Admin Users + Audit Log
 
 <!-- TMS_USE_CASE_STATUS_END -->

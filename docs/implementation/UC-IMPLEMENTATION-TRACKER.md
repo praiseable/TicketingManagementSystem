@@ -537,3 +537,30 @@ Smoke evidence:
 - Saved filter listed successfully
 - Saved filter deleted successfully
 - Meilisearch empty-result fallback to PostgreSQL verified
+
+## Checkpoint — UC-45 to UC-48 Integrations Completion
+
+Date: 2026-07-01
+
+Status:
+
+- UC-45 Receive email notification: DONE
+- UC-46 Configure notification preferences: DONE
+- UC-47 Configure webhook: DONE
+- UC-48 Link GitHub commit: DONE
+
+Verified through:
+
+- scripts/smoke-uc45-48-integrations.sh
+
+Smoke evidence:
+
+- Notification preferences updated successfully
+- Issue assignment created in-app notification
+- Email worker processed notification and wrote audit record
+- Email dev mode verified when SMTP is not configured
+- Webhook configured successfully
+- Webhook test delivery reached local capture server
+- Webhook delivery list returned delivery record
+- GitHub commit message containing issue key linked to issue
+- Linked commit returned from issue commit list endpoint

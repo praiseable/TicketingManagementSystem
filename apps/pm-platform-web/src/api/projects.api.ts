@@ -27,5 +27,13 @@ export const projectsApi = {
   customFields: (id: string) => api.get(`/projects/${id}/custom-fields`).then(unwrap<any[]>),
   createCustomField: (id: string, body: Record<string, unknown>) => api.post(`/projects/${id}/custom-fields`, body).then(unwrap<any>),
   updateCustomField: (id: string, fieldId: string, body: Record<string, unknown>) => api.patch(`/projects/${id}/custom-fields/${fieldId}`, body).then(unwrap<any>),
-  deleteCustomField: (id: string, fieldId: string) => api.delete(`/projects/${id}/custom-fields/${fieldId}`)
+  deleteCustomField: (id: string, fieldId: string) => api.delete(`/projects/${id}/custom-fields/${fieldId}`),
+
+  webhooks: (id: string) => api.get(`/projects/${id}/webhooks`).then(unwrap<any[]>),
+  createWebhook: (id: string, body: Record<string, unknown>) => api.post(`/projects/${id}/webhooks`, body).then(unwrap<any>),
+  updateWebhook: (id: string, webhookId: string, body: Record<string, unknown>) => api.patch(`/projects/${id}/webhooks/${webhookId}`, body).then(unwrap<any>),
+  deleteWebhook: (id: string, webhookId: string) => api.delete(`/projects/${id}/webhooks/${webhookId}`),
+  webhookDeliveries: (id: string, webhookId: string) => api.get(`/projects/${id}/webhooks/${webhookId}/deliveries`).then(unwrap<any[]>),
+  testWebhook: (id: string, webhookId: string) => api.post(`/projects/${id}/webhooks/${webhookId}/test`).then(unwrap<any>),
+  linkGithubCommit: (id: string, body: Record<string, unknown>) => api.post(`/projects/${id}/github/commits`, body).then(unwrap<any>)
 };
