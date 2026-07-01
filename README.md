@@ -115,13 +115,13 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 | UC-46 | Configure notification preferences | DONE | scripts/smoke-uc45-48-integrations.sh |
 | UC-47 | Configure webhook | DONE | scripts/smoke-uc45-48-integrations.sh |
 | UC-48 | Link GitHub commit | DONE | scripts/smoke-uc45-48-integrations.sh |
-| UC-49 | Manage users admin | PLANNED | Feature Pack 15 |
-| UC-50 | View audit log | PLANNED | Feature Pack 15 |
+| UC-49 | Manage users admin | DONE | scripts/smoke-uc49-50-admin-audit.sh |
+| UC-50 | View audit log | DONE | scripts/smoke-uc49-50-admin-audit.sh |
 
 ### Phase 2 Current Result
 
-Completed so far: UC-25 to UC-48  
-Next block: UC-49 to UC-50
+Completed so far: UC-25 to UC-50  
+Next block: Phase 3 — UC-51 to UC-73
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -176,7 +176,7 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 ## Current Verified Milestone
 
 Phase 1: COMPLETE  
-Phase 2: UC-25 to UC-48 COMPLETE  
-Next: UC-49 to UC-50 Admin Users + Audit Log
+Phase 2: UC-25 to UC-50 COMPLETE  
+Next: Phase 3 — Documentation, scale, JQL, Gantt, and SSO
 
 <!-- TMS_USE_CASE_STATUS_END -->

@@ -564,3 +564,31 @@ Smoke evidence:
 - Webhook delivery list returned delivery record
 - GitHub commit message containing issue key linked to issue
 - Linked commit returned from issue commit list endpoint
+
+## Checkpoint — UC-49 to UC-50 Admin / Audit Completion
+
+Date: 2026-07-01
+
+Status:
+
+- UC-49 Manage users admin: DONE
+- UC-50 View audit log: DONE
+
+Verified through:
+
+- scripts/smoke-uc49-50-admin-audit.sh
+
+Smoke evidence:
+
+- Admin login succeeded
+- Admin user list returned target user
+- User activation succeeded
+- User role change succeeded
+- User deactivation succeeded
+- User reactivation succeeded
+- Admin password reset succeeded
+- Login with reset password succeeded
+- User returned to baseline role/password
+- Audit log returned admin user actions
+- Audit action verification passed
+- Audit filters by entity/user/date returned expected records
