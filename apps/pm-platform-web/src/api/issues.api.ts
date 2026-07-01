@@ -11,6 +11,7 @@ export const issuesApi = {
   link: (projectId: string, issueId: string, body: { targetIssueId?: string; targetIssueKey?: string; type: string }) => api.post(`/projects/${projectId}/issues/${issueId}/link`, body).then(unwrap<unknown>),
   unlink: (projectId: string, issueId: string, linkId: string) => api.delete(`/projects/${projectId}/issues/${issueId}/link/${linkId}`),
   bulk: (projectId: string, body: { issueIds: string[]; action: string; value?: unknown }) => api.post(`/projects/${projectId}/issues/bulk`, body).then(unwrap<{ updated: number }>),
+  swimlanes: (projectId: string, groupBy: 'assignee' | 'priority' | 'label' | 'status' = 'assignee') => api.get(`/projects/${projectId}/issues/swimlanes/summary`, { params: { groupBy } }).then(unwrap<any>),
   watch: (projectId: string, issueId: string) => api.post(`/projects/${projectId}/issues/${issueId}/watch`),
   unwatch: (projectId: string, issueId: string) => api.delete(`/projects/${projectId}/issues/${issueId}/watch`)
 };

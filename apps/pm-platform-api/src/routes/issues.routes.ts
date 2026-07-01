@@ -11,6 +11,7 @@ const router = Router({ mergeParams: true });
 const projectParams = z.object({ projectId: id }).passthrough();
 const issueParams = z.object({ projectId: id, issueId: id }).passthrough();
 
+router.get('/swimlanes/summary', requireProjectRole(ProjectRole.MEMBER), issuesController.swimlanes);
 router.post('/bulk', requireProjectRole(ProjectRole.MEMBER), validate({ body: issueSchemas.bulk }), auditLogger('issue.bulk'), issuesController.bulk);
 
 // Board/list route: do not Zod-validate query or params here.

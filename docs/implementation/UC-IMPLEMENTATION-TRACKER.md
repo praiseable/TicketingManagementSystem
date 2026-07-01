@@ -401,3 +401,19 @@ Smoke evidence:
 - Incomplete issues moved to next sprint
 - Burndown endpoint returned data
 - Velocity endpoint returned data
+
+## Feature Pack 10 — UC-30 to UC-34 Story / Reporting / Board
+
+Status: IMPLEMENTED — awaiting smoke verification
+
+Use cases:
+
+- UC-30 Estimate story points
+- UC-31 View burndown chart
+- UC-32 View velocity report
+- UC-33 Set WIP limit
+- UC-34 View board swimlanes
+
+Verification script:
+
+- scripts/smoke-uc30-34-story-reports-board.sh

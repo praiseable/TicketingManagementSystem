@@ -42,6 +42,33 @@ async function replaceBulkLabels(tx: any, projectId: string, issueId: string, la
   }
 }
 
+
+function compactSwimlaneIssue(issue: any) {
+  return {
+    id: issue.id,
+    key: issue.key,
+    title: issue.title,
+    priority: issue.priority,
+    storyPoints: issue.storyPoints ?? 0,
+    assignee: issue.assignee ? { id: issue.assignee.id, name: issue.assignee.name, email: issue.assignee.email } : null,
+    workflowStatus: issue.workflowStatus ? { id: issue.workflowStatus.id, name: issue.workflowStatus.name, category: issue.workflowStatus.category, color: issue.workflowStatus.color } : null,
+    issueType: issue.issueType ? { id: issue.issueType.id, name: issue.issueType.name } : null,
+    labels: (issue.labels ?? []).map((x: any) => x.label ? { id: x.label.id, name: x.label.name, color: x.label.color } : x)
+  };
+}
+
+function addSwimlaneGroup(groups: Map<string, any>, key: string, label: string, issue: any) {
+  if (!groups.has(key)) {
+    groups.set(key, { key, label, count: 0, storyPoints: 0, statusCounts: {}, issues: [] });
+  }
+  const group = groups.get(key)!;
+  group.count += 1;
+  group.storyPoints += issue.storyPoints ?? 0;
+  const statusName = issue.workflowStatus?.name ?? 'Unknown';
+  group.statusCounts[statusName] = (group.statusCounts[statusName] ?? 0) + 1;
+  group.issues.push(compactSwimlaneIssue(issue));
+}
+
 async function bulkIssues(projectId: string, userId: string, input: { issueIds: string[]; action: string; value?: any }) {
   const issueIds = Array.from(new Set(input.issueIds ?? []));
   if (!issueIds.length) throw new AppError(400, 'NO_ISSUES_SELECTED', 'No issues selected');
@@ -116,6 +143,45 @@ async function bulkIssues(projectId: string, userId: string, input: { issueIds: 
 }
 
 export const issuesController = {
+  swimlanes: asyncHandler(async (req, res) => {
+    const projectId = projectIdFromReq(req);
+    const requested = String(req.query.groupBy ?? 'assignee').toLowerCase();
+    const groupBy = ['assignee', 'priority', 'label', 'status'].includes(requested) ? requested : 'assignee';
+
+    const issues = await prisma.issue.findMany({
+      where: { projectId, parentId: null },
+      include: {
+        workflowStatus: true,
+        issueType: true,
+        assignee: { select: { id: true, email: true, name: true, avatarUrl: true } },
+        labels: { include: { label: true } }
+      },
+      orderBy: [{ position: 'asc' }, { createdAt: 'asc' }]
+    });
+
+    const groups = new Map<string, any>();
+    for (const issue of issues) {
+      if (groupBy === 'assignee') {
+        addSwimlaneGroup(groups, issue.assigneeId ?? 'unassigned', issue.assignee?.name ?? issue.assignee?.email ?? 'Unassigned', issue);
+      } else if (groupBy === 'priority') {
+        addSwimlaneGroup(groups, issue.priority, issue.priority, issue);
+      } else if (groupBy === 'status') {
+        addSwimlaneGroup(groups, issue.workflowStatusId, issue.workflowStatus?.name ?? 'Unknown', issue);
+      } else {
+        const labels = issue.labels ?? [];
+        if (!labels.length) addSwimlaneGroup(groups, 'no-label', 'No label', issue);
+        for (const row of labels) addSwimlaneGroup(groups, row.labelId, row.label?.name ?? 'Label', issue);
+      }
+    }
+
+    ok(res, {
+      groupBy,
+      totalIssues: issues.length,
+      totalStoryPoints: issues.reduce((sum, issue) => sum + (issue.storyPoints ?? 0), 0),
+      groups: Array.from(groups.values()).sort((a, b) => a.label.localeCompare(b.label))
+    });
+  }),
+
   list: asyncHandler(async (req, res) => {
     const result = await issueService.list(projectIdFromReq(req), req.query);
     ok(res, result.data, result.meta);

@@ -132,10 +132,10 @@ export function IssueListPage() {
 
       <div className="overflow-hidden rounded-lg border">
         <table className="w-full text-sm">
-          <thead><tr className="border-b bg-muted/40"><th className="p-3"><input type="checkbox" checked={selectedAll} onChange={(e) => setSelected(e.target.checked ? issues.map((i: any) => i.id) : [])} /></th><th className="p-3 text-left">Key</th><th className="p-3 text-left">Title</th><th className="p-3 text-left">Type</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Priority</th><th className="p-3 text-left">Assignee</th><th className="p-3 text-left">Labels</th></tr></thead>
+          <thead><tr className="border-b bg-muted/40"><th className="p-3"><input type="checkbox" checked={selectedAll} onChange={(e) => setSelected(e.target.checked ? issues.map((i: any) => i.id) : [])} /></th><th className="p-3 text-left">Key</th><th className="p-3 text-left">Title</th><th className="p-3 text-left">Type</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Priority</th><th className="p-3 text-left">Points</th><th className="p-3 text-left">Assignee</th><th className="p-3 text-left">Labels</th></tr></thead>
           <tbody>
-            {isLoading && <tr><td className="p-6 text-center text-muted-foreground" colSpan={8}>Loading issues…</td></tr>}
-            {!isLoading && !issues.length && <tr><td className="p-6 text-center text-muted-foreground" colSpan={8}>No issues match the selected filters.</td></tr>}
+            {isLoading && <tr><td className="p-6 text-center text-muted-foreground" colSpan={9}>Loading issues…</td></tr>}
+            {!isLoading && !issues.length && <tr><td className="p-6 text-center text-muted-foreground" colSpan={9}>No issues match the selected filters.</td></tr>}
             {issues.map((issue: any) => (
               <tr key={issue.id} className="border-b hover:bg-muted/40">
                 <td className="p-3"><input type="checkbox" checked={selected.includes(issue.id)} onChange={(e) => setSelected((s) => e.target.checked ? [...s, issue.id] : s.filter((x) => x !== issue.id))} /></td>
@@ -144,6 +144,7 @@ export function IssueListPage() {
                 <td className="p-3">{issue.issueType?.name}</td>
                 <td className="p-3"><StatusBadge status={issue.workflowStatus} /></td>
                 <td className="p-3"><PriorityBadge priority={issue.priority} /></td>
+                <td className="p-3">{issue.storyPoints ?? 0}</td>
                 <td className="p-3">{issue.assignee?.name ?? issue.assignee?.email ?? 'Unassigned'}</td>
                 <td className="p-3"><div className="flex flex-wrap gap-1">{(issue.labels ?? []).map((x: any) => <Badge key={x.label?.id ?? x.id} variant="outline">{x.label?.name ?? x.name}</Badge>)}</div></td>
               </tr>
