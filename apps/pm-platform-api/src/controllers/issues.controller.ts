@@ -189,7 +189,15 @@ export const issuesController = {
   create: asyncHandler(async (req, res) => created(res, await issueService.create(projectIdFromReq(req), req.user!.id, req.body))),
   get: asyncHandler(async (req, res) => ok(res, await issueService.get(projectIdFromReq(req), issueIdFromReq(req)))),
   update: asyncHandler(async (req, res) => ok(res, await issueService.update(projectIdFromReq(req), issueIdFromReq(req), req.user!.id, req.body))),
-  remove: asyncHandler(async (req, res) => { await issueService.delete(projectIdFromReq(req), issueIdFromReq(req)); noContent(res); }),
+  remove: asyncHandler(async (req, res) => {
+    await issueService.delete(
+      projectIdFromReq(req),
+      issueIdFromReq(req),
+      req.user!.id,
+      req.user!.role as any
+    );
+    noContent(res);
+  }),
   transition: asyncHandler(async (req, res) => ok(res, await issueService.transition(issueIdFromReq(req), req.body.toStatusId, req.user!.id, req.body.comment))),
   link: asyncHandler(async (req, res) => created(res, await issueService.link(issueIdFromReq(req), req.user!.id, req.body))),
   unlink: asyncHandler(async (req, res) => { await prisma.issueLink.delete({ where: { id: paramString(req.params.linkId)! } }); noContent(res); }),
