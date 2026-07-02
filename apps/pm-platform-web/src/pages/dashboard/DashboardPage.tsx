@@ -1,198 +1,168 @@
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { projectsApi } from '@/api/projects.api';
 import { issuesApi } from '@/api/issues.api';
-import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/EmptyState';
+import { Feedback } from '@/components/common/Feedback';
+import { useAuthStore } from '@/stores/auth.store';
 import type { Issue, Project } from '@/types';
 
-type DashboardIssue = Issue & { project?: Pick<Project, 'id' | 'name' | 'key'> };
-
-function isDone(issue: DashboardIssue) {
+function isDone(issue: Issue) {
   return issue.workflowStatus?.category === 'DONE' || Boolean(issue.resolvedAt);
 }
 
-function priorityRank(priority?: string) {
-  const order: Record<string, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1, NONE: 0 };
-  return order[priority ?? 'NONE'] ?? 0;
+function isOverdue(issue: Issue) {
+  if (!issue.dueDate || isDone(issue)) return false;
+  return new Date(issue.dueDate).getTime() < Date.now();
 }
 
-function assigneeKey(issue: DashboardIssue) {
-  return issue.assignee?.id ?? 'unassigned';
-}
-
-function assigneeName(issue: DashboardIssue) {
+function assigneeLabel(issue: Issue) {
   return issue.assignee?.name || issue.assignee?.email || 'Unassigned';
 }
 
+async function loadDashboard() {
+  const projects = await projectsApi.list();
+  const issueGroups = await Promise.all(
+    projects.map(async (project) => {
+      try {
+        const result = await issuesApi.list(project.id, { page: 1, limit: 500 });
+        return result.data.map((issue) => ({ ...issue, project }));
+      } catch {
+        return [] as Array<Issue & { project: Project }>;
+      }
+    })
+  );
+
+  return {
+    projects,
+    issues: issueGroups.flat(),
+  };
+}
+
 export function DashboardPage() {
-  const user = useAuthStore((state) => state.user);
-  const projects = useQuery({ queryKey: ['projects'], queryFn: projectsApi.list });
+  const user = useAuthStore((s) => s.user);
+  const dashboard = useQuery({ queryKey: ['dashboard-operational-summary'], queryFn: loadDashboard });
 
-  const issuesQuery = useQuery({
-    queryKey: ['dashboard-issues', (projects.data ?? []).map((p) => p.id).join(',')],
-    enabled: Boolean(projects.data?.length),
-    queryFn: async () => {
-      const rows = await Promise.all(
-        (projects.data ?? []).map(async (project) => {
-          const result = await issuesApi.list(project.id, { page: 1, limit: 500 });
-          return (result.data ?? []).map((issue) => ({ ...issue, project: { id: project.id, name: project.name, key: project.key } }));
-        })
-      );
-      return rows.flat() as DashboardIssue[];
-    }
-  });
-
-  const issues = issuesQuery.data ?? [];
+  const projects = dashboard.data?.projects ?? [];
+  const issues = dashboard.data?.issues ?? [];
   const openIssues = issues.filter((issue) => !isDone(issue));
   const doneIssues = issues.filter(isDone);
-  const myOpenIssues = openIssues.filter((issue) => issue.assignee?.id === user?.id);
-  const unassignedIssues = openIssues.filter((issue) => !issue.assignee?.id);
-  const urgentIssues = openIssues.filter((issue) => ['CRITICAL', 'HIGH'].includes(issue.priority));
+  const myIssues = openIssues.filter((issue) => issue.assignee?.id === user?.id || issue.assignee?.email === user?.email);
+  const unassignedIssues = openIssues.filter((issue) => !issue.assignee);
+  const overdueIssues = openIssues.filter(isOverdue);
 
-  const assigneeRows = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; email?: string; open: number; done: number; urgent: number; issues: DashboardIssue[] }>();
+  const byAssignee = Array.from(
+    openIssues.reduce((map, issue) => {
+      const key = assigneeLabel(issue);
+      map.set(key, (map.get(key) ?? 0) + 1);
+      return map;
+    }, new Map<string, number>())
+  ).sort((a, b) => b[1] - a[1]);
 
-    for (const issue of issues) {
-      const key = assigneeKey(issue);
-      const row = map.get(key) ?? {
-        id: key,
-        name: assigneeName(issue),
-        email: issue.assignee?.email,
-        open: 0,
-        done: 0,
-        urgent: 0,
-        issues: [],
-      };
+  const byPriority = Array.from(
+    openIssues.reduce((map, issue) => {
+      const key = issue.priority || 'NONE';
+      map.set(key, (map.get(key) ?? 0) + 1);
+      return map;
+    }, new Map<string, number>())
+  ).sort((a, b) => b[1] - a[1]);
 
-      if (isDone(issue)) row.done += 1;
-      else row.open += 1;
+  const recent = [...issues].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 8);
 
-      if (!isDone(issue) && ['CRITICAL', 'HIGH'].includes(issue.priority)) row.urgent += 1;
-      row.issues.push(issue);
-      map.set(key, row);
-    }
-
-    return Array.from(map.values()).sort((a, b) => b.open - a.open || b.urgent - a.urgent || a.name.localeCompare(b.name));
-  }, [issues]);
-
-  const recentWork = [...openIssues]
-    .sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority) || new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 8);
-
-  const isLoading = projects.isLoading || issuesQuery.isLoading;
+  if (dashboard.isLoading) return <div className="space-y-4"><h1 className="text-3xl font-bold">Dashboard</h1><div className="rounded-lg border p-6 text-sm text-muted-foreground">Loading dashboard data…</div></div>;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Live project, ticket, assignee, priority, and sprint execution overview.</p>
+        <p className="text-sm text-muted-foreground">Operational view of project work, ownership, and recent activity.</p>
       </div>
 
-      {(projects.error || issuesQuery.error) && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          Could not load all dashboard data. Refresh the page or check API health.
-        </div>
-      )}
+      {dashboard.error && <Feedback tone="error" title="Dashboard data failed to load" message="Some project or issue statistics could not be loaded. Refresh the page or check API health." />}
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card><CardHeader><CardTitle>Projects</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{projects.data?.length ?? 0}</div><p className="text-xs text-muted-foreground">Active project spaces</p></CardContent></Card>
-        <Card><CardHeader><CardTitle>Total tickets</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{issues.length}</div><p className="text-xs text-muted-foreground">Loaded from all projects</p></CardContent></Card>
-        <Card><CardHeader><CardTitle>Open work</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{openIssues.length}</div><p className="text-xs text-muted-foreground">Not done yet</p></CardContent></Card>
-        <Card><CardHeader><CardTitle>My open tickets</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{myOpenIssues.length}</div><p className="text-xs text-muted-foreground">Assigned to {user?.name ?? 'me'}</p></CardContent></Card>
+      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+        <Metric title="Projects" value={projects.length} />
+        <Metric title="Total tickets" value={issues.length} />
+        <Metric title="Open" value={openIssues.length} />
+        <Metric title="Done" value={doneIssues.length} />
+        <Metric title="Assigned to me" value={myIssues.length} />
+        <Metric title="Unassigned" value={unassignedIssues.length} tone={unassignedIssues.length ? 'warning' : undefined} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card><CardHeader><CardTitle>Completed</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{doneIssues.length}</div><p className="text-xs text-muted-foreground">Done or resolved</p></CardContent></Card>
-        <Card><CardHeader><CardTitle>High priority</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{urgentIssues.length}</div><p className="text-xs text-muted-foreground">Critical / high open tickets</p></CardContent></Card>
-        <Card><CardHeader><CardTitle>Unassigned</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{unassignedIssues.length}</div><p className="text-xs text-muted-foreground">Open tickets without owner</p></CardContent></Card>
-      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader><CardTitle>Tickets by assignee</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {byAssignee.length ? byAssignee.map(([name, count]) => (
+              <div key={name} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                <span>{name}</span><Badge>{count}</Badge>
+              </div>
+            )) : <EmptyState title="No open tickets" description="Open tickets will appear grouped by assignee." />}
+          </CardContent>
+        </Card>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Tickets by assignee</h2>
-          {isLoading && <span className="text-xs text-muted-foreground">Loading live issue data…</span>}
-        </div>
-        {assigneeRows.length ? (
-          <div className="overflow-hidden rounded-lg border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted text-left">
-                <tr>
-                  <th className="p-3">Assignee</th>
-                  <th className="p-3">Open</th>
-                  <th className="p-3">Done</th>
-                  <th className="p-3">Critical/High</th>
-                  <th className="p-3">Current tickets</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assigneeRows.map((row) => (
-                  <tr key={row.id} className="border-t align-top">
-                    <td className="p-3"><div className="font-medium">{row.name}</div><div className="text-xs text-muted-foreground">{row.email ?? (row.id === 'unassigned' ? 'Needs assignment' : '')}</div></td>
-                    <td className="p-3 font-semibold">{row.open}</td>
-                    <td className="p-3">{row.done}</td>
-                    <td className="p-3">{row.urgent}</td>
-                    <td className="p-3">
-                      <div className="flex flex-wrap gap-1">
-                        {row.issues.filter((issue) => !isDone(issue)).slice(0, 5).map((issue) => (
-                          <Link key={issue.id} to={`/projects/${issue.projectId}/issues/${issue.id}`} className="rounded-full border px-2 py-1 text-xs hover:bg-accent">
-                            {issue.key}
-                          </Link>
-                        ))}
-                        {row.open > 5 && <Badge>+{row.open - 5}</Badge>}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState title="No ticket assignments" description="Create or assign issues to see ownership here." />
-        )}
-      </section>
+        <Card>
+          <CardHeader><CardTitle>Priority pressure</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {byPriority.length ? byPriority.map(([priority, count]) => (
+              <div key={priority} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                <span>{priority}</span><Badge>{count}</Badge>
+              </div>
+            )) : <EmptyState title="No priority data" description="Open issue priorities will appear here." />}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Attention needed</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"><span>Overdue tickets</span><Badge>{overdueIssues.length}</Badge></div>
+            <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"><span>Unassigned tickets</span><Badge>{unassignedIssues.length}</Badge></div>
+            <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"><span>My open tickets</span><Badge>{myIssues.length}</Badge></div>
+          </CardContent>
+        </Card>
+      </div>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Recent active tickets</h2>
-          {recentWork.length ? (
-            <div className="space-y-2">
-              {recentWork.map((issue) => (
-                <Link key={issue.id} to={`/projects/${issue.projectId}/issues/${issue.id}`} className="block rounded-lg border p-3 hover:bg-accent">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="font-semibold">{issue.key} · {issue.title}</div>
-                    <Badge>{issue.priority}</Badge>
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {issue.project?.key ?? issue.projectId} · {issue.workflowStatus?.name ?? 'No status'} · Assigned to {assigneeName(issue)}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="No active tickets" description="There are no open tickets in the loaded projects." />
-          )}
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Recent active tickets</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {recent.length ? recent.map((issue: Issue & { project?: Project }) => (
+              <Link key={issue.id} to={`/projects/${issue.projectId}/issues/${issue.id}`} className="block rounded-lg border p-3 hover:bg-accent">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-semibold">{issue.key} · {issue.title}</div>
+                  <Badge>{issue.workflowStatus?.name ?? 'No status'}</Badge>
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Project: {issue.project?.name ?? issue.projectId} · Assignee: {assigneeLabel(issue)} · Priority: {issue.priority}
+                </div>
+              </Link>
+            )) : <EmptyState title="No tickets yet" description="Create tickets to see recent activity." />}
+          </CardContent>
+        </Card>
 
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Recent projects</h2>
-          {projects.data?.length ? (
-            <div className="grid gap-3">
-              {projects.data.map((p) => (
-                <Link key={p.id} to={`/projects/${p.id}/board`} className="rounded-lg border p-4 hover:bg-accent">
-                  <div className="font-semibold">{p.name}</div>
-                  <div className="text-sm text-muted-foreground">{p.key} · {p._count?.issues ?? 0} issues · {p._count?.members ?? 0} members</div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="No projects" description="Create a project to start planning." />
-          )}
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Recent projects</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {projects.length ? projects.map((project) => (
+              <Link key={project.id} to={`/projects/${project.id}/board`} className="block rounded-lg border p-3 hover:bg-accent">
+                <div className="font-semibold">{project.name}</div>
+                <div className="text-sm text-muted-foreground">{project.key} · {project._count?.issues ?? 0} issues · {project._count?.members ?? 0} members</div>
+              </Link>
+            )) : <EmptyState title="No projects" description="Create a project to start planning." />}
+          </CardContent>
+        </Card>
       </section>
     </div>
+  );
+}
+
+function Metric({ title, value, tone }: { title: string; value: number; tone?: 'warning' }) {
+  return (
+    <Card className={tone === 'warning' ? 'border-amber-200 bg-amber-50' : undefined}>
+      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle></CardHeader>
+      <CardContent><div className="text-3xl font-bold">{value}</div></CardContent>
+    </Card>
   );
 }
