@@ -45,11 +45,19 @@ export function IssueCard({ issue, preview = false }: { issue: Issue; preview?: 
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex items-center justify-between gap-2 border-t pt-3 text-xs text-muted-foreground">
           <span>{issue.issueType?.name ?? 'Issue'}</span>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {typeof issue.storyPoints === 'number' && <span className="rounded bg-muted px-1.5 py-0.5 font-medium">{issue.storyPoints} pts</span>}
-            <UserAvatar user={issue.assignee} className="h-6 w-6" />
+            <div
+              className="flex min-w-0 max-w-[150px] items-center gap-1.5 rounded-md bg-muted/70 px-2 py-1"
+              title={issue.assignee?.name || issue.assignee?.email || 'Unassigned'}
+            >
+              <UserAvatar user={issue.assignee} className="h-5 w-5 shrink-0" />
+              <span className="truncate font-medium text-foreground">
+                {issue.assignee?.name || issue.assignee?.email || 'Unassigned'}
+              </span>
+            </div>
           </div>
         </div>
 
