@@ -659,3 +659,27 @@ Smoke evidence:
 - Public share token persisted and opened without auth
 - Docs search returned the created page
 - Space analytics returned pages/comments/versions counts
+
+## Checkpoint — UC-65 to UC-68 Load / JQL / Workflow Post-Functions Completion
+
+Date: 2026-07-02
+
+Status:
+
+- UC-65 Load test 500 users baseline: DONE
+- UC-66 Query with JQL: DONE
+- UC-67 JQL autocomplete: DONE
+- UC-68 Workflow post-function: DONE
+
+Verified through:
+
+- scripts/smoke-uc65-68-load-jql-postfn.sh
+- scripts/loadtest-uc65-baseline.js
+
+Smoke evidence:
+
+- 500-user baseline load test completed successfully
+- JQL query returned expected issue
+- JQL autocomplete returned suggestions
+- AUTO_LABEL post-function created and applied during transition
+- AUTO_NOTIFY post-function created notification during transition

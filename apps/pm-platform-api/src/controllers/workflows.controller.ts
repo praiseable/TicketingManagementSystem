@@ -162,5 +162,28 @@ export const workflowsController = {
     if (!guard) throw new AppError(404, 'GUARD_NOT_FOUND', 'Transition guard not found');
     await prisma.transitionGuard.delete({ where: { id: gId } });
     noContent(res);
+  }),
+
+  createPostFn: asyncHandler(async (req, res) => {
+    const projectId = stringParam(req.params.projectId ?? req.params.id);
+    const wfId = stringParam(req.params.wfId);
+    const tId = stringParam(req.params.tId);
+    await assertWorkflow(projectId, wfId);
+    const transition = await prisma.workflowTransition.findFirst({ where: { id: tId, workflowId: wfId } });
+    if (!transition) throw new AppError(404, 'TRANSITION_NOT_FOUND', 'Transition not found');
+    const count = await prisma.transitionPostFn.count({ where: { transitionId: tId } });
+    const postFn = await prisma.transitionPostFn.create({ data: { transitionId: tId, type: req.body.type, config: req.body.config ?? {}, position: req.body.position ?? (count + 1) * 100 } });
+    created(res, postFn);
+  }),
+
+  removePostFn: asyncHandler(async (req, res) => {
+    const projectId = stringParam(req.params.projectId ?? req.params.id);
+    const wfId = stringParam(req.params.wfId);
+    const pfId = stringParam(req.params.pfId);
+    await assertWorkflow(projectId, wfId);
+    const postFn = await prisma.transitionPostFn.findFirst({ where: { id: pfId, transition: { workflowId: wfId } } });
+    if (!postFn) throw new AppError(404, 'POST_FUNCTION_NOT_FOUND', 'Transition post-function not found');
+    await prisma.transitionPostFn.delete({ where: { id: pfId } });
+    noContent(res);
   })
 };

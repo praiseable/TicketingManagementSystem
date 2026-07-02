@@ -7,6 +7,8 @@ import { id, searchSchemas } from '../schemas/index.js';
 const router = Router();
 router.get('/', searchController.global);
 router.get('/issues', searchController.issues);
+router.get('/jql/autocomplete', searchController.jqlAutocomplete);
+router.get('/jql', searchController.jql);
 router.post('/reindex', auditLogger('search.reindex'), searchController.reindex);
 router.post('/filters/save', validate({ body: searchSchemas.saveFilter }), auditLogger('filter.save'), searchController.saveFilter);
 router.get('/filters', searchController.filters);

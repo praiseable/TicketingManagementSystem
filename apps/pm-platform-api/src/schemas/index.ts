@@ -76,7 +76,8 @@ export const workflowSchemas = {
   workflow: z.object({ name: z.string().min(2), isDefault: z.boolean().optional() }),
   status: z.object({ name: z.string().min(2), color: z.string().default('#64748b'), category: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).default('TODO'), position: z.number().optional(), wipLimit: z.number().int().nullable().optional() }),
   transition: z.object({ fromStatusId: id, toStatusId: id, name: z.string().min(2) }),
-  guard: z.object({ type: z.enum(['REQUIRED_FIELD', 'ASSIGNEE_SET', 'PERMISSION']), fieldId: id.nullable().optional(), config: z.record(z.unknown()).default({}) })
+  guard: z.object({ type: z.enum(['REQUIRED_FIELD', 'ASSIGNEE_SET', 'PERMISSION']), fieldId: id.nullable().optional(), config: z.record(z.unknown()).default({}) }),
+  postFn: z.object({ type: z.enum(['AUTO_ASSIGN', 'AUTO_LABEL', 'AUTO_NOTIFY', 'SET_FIELD', 'MOVE_TO_SPRINT']), config: z.record(z.unknown()).default({}), position: z.coerce.number().optional() })
 };
 
 export const typeSchemas = {

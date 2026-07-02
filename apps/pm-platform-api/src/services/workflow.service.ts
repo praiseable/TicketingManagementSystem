@@ -192,11 +192,27 @@ export const workflowService = {
 
           if (fn.type === PostFnType.SET_FIELD && config.field && config.value) {
             await tx.issue.update({ where: { id: issueId }, data: { [config.field]: config.value } as never });
+            await tx.issueHistory.create({ data: { issueId, userId, field: `postfn.set_field.${config.field}`, oldValue: null, newValue: String(config.value ?? '') } });
+          }
+
+          if (fn.type === PostFnType.AUTO_NOTIFY) {
+            const userIds = Array.isArray((config as any).userIds) ? (config as any).userIds : (config as any).userId ? [(config as any).userId] : [];
+            for (const targetUserId of [...new Set(userIds.map(String).filter(Boolean))]) {
+              await tx.notification.create({ data: { userId: targetUserId, type: NotificationType.ISSUE_UPDATED, title: (config as any).title || `${updated.key} workflow update`, body: (config as any).body || `${updated.title} triggered a workflow notification`, entityType: 'issue', entityId: issueId } });
+            }
+          }
+
+          if (fn.type === PostFnType.MOVE_TO_SPRINT && (config as any).sprintId) {
+            const sprintId = String((config as any).sprintId);
+            const sprint = await tx.sprint.findFirst({ where: { id: sprintId, projectId: updated.projectId } });
+            if (!sprint) throw new AppError(422, 'SPRINT_NOT_IN_PROJECT', 'Post-function sprint must belong to the issue project');
+            await tx.issue.update({ where: { id: issueId }, data: { sprintId } });
+            await tx.sprintIssue.upsert({ where: { sprintId_issueId: { sprintId, issueId } }, update: { completedInSprint: false }, create: { sprintId, issueId, completedInSprint: false } });
           }
         }
       }
 
-      return updated;
+      return tx.issue.findUniqueOrThrow({ where: { id: issueId }, include: { project: true, assignee: true, workflowStatus: true, issueType: true, labels: { include: { label: true } } } });
     });
 
     try {

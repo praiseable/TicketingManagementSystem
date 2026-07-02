@@ -121,8 +121,8 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 ### Phase 2 Current Result
 
 Completed so far: UC-25 to UC-50  
-Completed so far: UC-51 to UC-64
-Next block: UC-65 to UC-73
+Completed so far: UC-51 to UC-68
+Next block: UC-69 to UC-73
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -146,10 +146,10 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 | UC-62 | Share page publicly | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
 | UC-63 | Search across docs | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
 | UC-64 | View space analytics | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
-| UC-65 | Load test 500 users | FUTURE | Phase 3 hardening |
-| UC-66 | Query with JQL | FUTURE | Phase 3 |
-| UC-67 | JQL autocomplete | FUTURE | Phase 3 |
-| UC-68 | Workflow post-function | FUTURE | Phase 3 |
+| UC-65 | Load test 500 users baseline | DONE | scripts/loadtest-uc65-baseline.js |
+| UC-66 | Query with JQL | DONE | scripts/smoke-uc65-68-load-jql-postfn.sh |
+| UC-67 | JQL autocomplete | DONE | scripts/smoke-uc65-68-load-jql-postfn.sh |
+| UC-68 | Workflow post-function | DONE | scripts/smoke-uc65-68-load-jql-postfn.sh |
 | UC-69 | Create permission scheme | FUTURE | Phase 3 |
 | UC-70 | Manage user groups | FUTURE | Phase 3 |
 | UC-71 | View Gantt timeline | FUTURE | Phase 3 |
