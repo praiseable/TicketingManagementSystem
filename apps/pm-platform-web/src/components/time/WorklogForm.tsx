@@ -9,8 +9,8 @@ import { useCreateWorklog, useUpdateWorklog } from '@/hooks/useWorklogs';
 import type { Worklog } from '@/types';
 
 const schema = z.object({
-  timeSpent: z.coerce.number().int().positive(),
-  dateStarted: z.string().min(1),
+  timeSpent: z.coerce.number().int('Time must be a whole number of seconds.').positive('Time spent must be greater than zero.'),
+  dateStarted: z.string().min(1, 'Date started is required.'),
   description: z.string().optional()
 });
 

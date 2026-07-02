@@ -83,7 +83,7 @@ export function SprintsPage() {
           <div className="flex gap-2 md:col-span-6">
             <Input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} />
             <Input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} />
-            <Button onClick={() => createSprint.mutate()} disabled={!form.name || createSprint.isPending}>Create</Button>
+            <Button onClick={() => form.name.trim() ? createSprint.mutate() : alert('Sprint name is required')} disabled={!form.name || createSprint.isPending}>Create</Button>
           </div>
         </CardContent>
       </Card>
@@ -112,7 +112,7 @@ export function SprintsPage() {
                   <div><h2 className="text-2xl font-semibold">{selected.name}</h2><p className="text-sm text-muted-foreground">{selected.goal || 'No sprint goal'}</p></div>
                   <div className="flex flex-wrap gap-2">
                     {selected.status === 'DRAFT' && <Button onClick={() => startSprint.mutate(selected.id)} disabled={startSprint.isPending}><Play className="h-4 w-4" /> Start</Button>}
-                    {selected.status === 'ACTIVE' && <Button onClick={() => completeSprint.mutate({ sprintId: selected.id, moveToSprintId: draftSprints.find((s) => s.id !== selected.id)?.id ?? null })} disabled={completeSprint.isPending}><CheckCircle2 className="h-4 w-4" /> Complete</Button>}
+                    {selected.status === 'ACTIVE' && <Button onClick={() => window.confirm('Complete sprint? Incomplete issues will be moved.') && completeSprint.mutate({ sprintId: selected.id, moveToSprintId: draftSprints.find((s) => s.id !== selected.id)?.id ?? null })} disabled={completeSprint.isPending}><CheckCircle2 className="h-4 w-4" /> Complete</Button>}
                   </div>
                 </div>
                 <div className="grid gap-3 md:grid-cols-4">

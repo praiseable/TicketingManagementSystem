@@ -34,7 +34,7 @@ export function IssueLinks({ projectId, issue }: { projectId: string; issue: Iss
     {open && <div className="grid gap-2 md:grid-cols-[160px_1fr_auto]">
       <Select value={type} onValueChange={setType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{linkTypes.map((item) => <SelectItem key={item} value={item}>{label(item)}</SelectItem>)}</SelectContent></Select>
       <Input value={target} onChange={(e) => setTarget(e.target.value)} placeholder="Target issue key, e.g. PM-12" />
-      <Button disabled={!target.trim() || create.isPending} onClick={() => create.mutate()}>{create.isPending ? 'Linking…' : 'Link'}</Button>
+      <Button disabled={!target.trim() || create.isPending} onClick={() => target.trim() ? create.mutate() : alert('Target issue key or ID is required.')}>{create.isPending ? 'Linking…' : 'Link'}</Button>
     </div>}
     <div className="space-y-2">
       {outgoing.map((link: IssueLink) => <div key={link.id} className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm">

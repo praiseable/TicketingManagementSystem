@@ -5,34 +5,19 @@ import { Button } from '@/components/ui/button';
 import { attachmentsApi } from '@/api/attachments.api';
 import { queryKeys } from '@/api/queryKeys';
 import { formatBytes } from '@/utils/formatters';
+import { Feedback } from '@/components/common/Feedback';
+import { LoadingButton } from '@/components/common/LoadingButton';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { getApiErrorMessage } from '@/lib/api-error';
 import type { Attachment } from '@/types';
-
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+type Notice = { tone: 'success' | 'error' | 'info' | 'warning'; title: string; message?: string } | null;
 export function AttachmentUpload({ issueId, attachments = [] }: { issueId: string; attachments?: Attachment[] }) {
-  const qc = useQueryClient();
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const [dragging, setDragging] = useState(false);
+  const qc = useQueryClient(); const inputRef = useRef<HTMLInputElement | null>(null); const [dragging, setDragging] = useState(false); const [notice, setNotice] = useState<Notice>(null);
   const refresh = () => qc.invalidateQueries({ queryKey: queryKeys.issue(issueId) });
-  const upload = useMutation({ mutationFn: (file: File) => attachmentsApi.upload(issueId, file), onSuccess: refresh });
-  const remove = useMutation({ mutationFn: (id: string) => attachmentsApi.remove(issueId, id), onSuccess: refresh });
-  async function openAttachment(id: string) {
-    const { url } = await attachmentsApi.url(issueId, id);
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
-  function handleFiles(files: FileList | null) { if (files?.[0]) upload.mutate(files[0]); }
-
-  return <div className="space-y-3 rounded-xl border bg-card p-4">
-    <div className="flex items-center justify-between"><h3 className="font-semibold">Attachments <span className="text-xs text-muted-foreground">({attachments.length})</span></h3><Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}><Upload className="h-4 w-4" /> Upload</Button></div>
-    <div className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed p-6 text-sm transition ${dragging ? 'border-primary bg-primary/10' : 'text-muted-foreground'}`} onClick={() => inputRef.current?.click()} onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}>
-      <Upload className="mb-2 h-5 w-5" />
-      {upload.isPending ? 'Uploading…' : 'Drop files here or click to upload'}
-      <input ref={inputRef} type="file" className="hidden" onChange={(e) => handleFiles(e.target.files)} />
-    </div>
-    <div className="grid gap-2 sm:grid-cols-2">
-      {attachments.map((a) => <div key={a.id} className="flex items-center justify-between gap-2 rounded-md border p-3 text-xs">
-        <div className="min-w-0"><div className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 shrink-0" /><span className="truncate">{a.filename}</span></div><div className="text-muted-foreground">{formatBytes(Number(a.sizeBytes))} · {a.user?.name ?? 'User'}</div></div>
-        <div className="flex shrink-0 gap-1"><Button size="icon" variant="ghost" onClick={() => openAttachment(a.id)}><Download className="h-4 w-4" /></Button><Button size="icon" variant="ghost" onClick={() => remove.mutate(a.id)}><Trash2 className="h-4 w-4" /></Button></div>
-      </div>)}
-      {!attachments.length && <p className="text-sm text-muted-foreground">No attachments yet.</p>}
-    </div>
-  </div>;
+  const upload = useMutation({ mutationFn: (file: File) => attachmentsApi.upload(issueId, file), onSuccess: (file) => { setNotice({ tone: 'success', title: 'Attachment uploaded', message: `${file.filename} was added to this issue.` }); if (inputRef.current) inputRef.current.value = ''; refresh(); }, onError: (error) => setNotice({ tone: 'error', title: 'Upload failed', message: getApiErrorMessage(error, 'Could not upload the attachment. Check storage and try again.') }) });
+  const remove = useMutation({ mutationFn: (id: string) => attachmentsApi.remove(issueId, id), onSuccess: () => { setNotice({ tone: 'success', title: 'Attachment removed' }); refresh(); }, onError: (error) => setNotice({ tone: 'error', title: 'Delete failed', message: getApiErrorMessage(error, 'Could not delete the attachment.') }) });
+  async function openAttachment(id: string) { try { setNotice(null); const { url } = await attachmentsApi.url(issueId, id); window.open(url, '_blank', 'noopener,noreferrer'); } catch (error) { setNotice({ tone: 'error', title: 'Could not open attachment', message: getApiErrorMessage(error, 'Could not create a download link.') }); } }
+  function handleFiles(files: FileList | null) { const file = files?.[0]; if (!file) return; if (file.size > MAX_UPLOAD_BYTES) { setNotice({ tone: 'error', title: 'File too large', message: `Maximum supported upload size is ${formatBytes(MAX_UPLOAD_BYTES)}.` }); return; } setNotice(null); upload.mutate(file); }
+  return <div className="space-y-3 rounded-xl border bg-card p-4"><div className="flex items-center justify-between"><h3 className="font-semibold">Attachments <span className="text-xs text-muted-foreground">({attachments.length})</span></h3><LoadingButton size="sm" variant="outline" loading={upload.isPending} loadingText="Uploading…" onClick={() => inputRef.current?.click()}><Upload className="h-4 w-4" /> Upload</LoadingButton></div><Feedback tone={notice?.tone} title={notice?.title} message={notice?.message} /><div className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed p-6 text-sm transition ${dragging ? 'border-primary bg-primary/10' : 'text-muted-foreground'}`} onClick={() => inputRef.current?.click()} onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}><Upload className="mb-2 h-5 w-5" />{upload.isPending ? 'Uploading…' : 'Drop files here or click to upload'}<input ref={inputRef} type="file" className="hidden" onChange={(e) => handleFiles(e.target.files)} /><span className="mt-2 text-xs text-muted-foreground">Max file size {formatBytes(MAX_UPLOAD_BYTES)}</span></div><div className="grid gap-2 sm:grid-cols-2">{attachments.map((a) => <div key={a.id} className="flex items-center justify-between gap-2 rounded-md border p-3 text-xs"><div className="min-w-0"><div className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 shrink-0" /><span className="truncate">{a.filename}</span></div><div className="text-muted-foreground">{formatBytes(Number(a.sizeBytes))} · {a.user?.name ?? 'User'}</div></div><div className="flex shrink-0 gap-1"><Button size="icon" variant="ghost" onClick={() => openAttachment(a.id)} title="Download attachment"><Download className="h-4 w-4" /></Button><ConfirmDialog title="Delete attachment?" description={`Remove ${a.filename} from this issue.`} confirmText="Delete" loading={remove.isPending} onConfirm={() => remove.mutate(a.id)}><Button size="icon" variant="ghost" title="Delete attachment"><Trash2 className="h-4 w-4" /></Button></ConfirmDialog></div></div>)}{!attachments.length && <p className="text-sm text-muted-foreground">No attachments yet. Upload design files, screenshots, or supporting documents.</p>}</div></div>;
 }

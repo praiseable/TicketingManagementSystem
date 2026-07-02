@@ -24,7 +24,7 @@ export function WorklogList({ issueId, worklogs = [] }: { issueId: string; workl
         <div className="flex items-center gap-2">
           <span className="font-mono">{formatDuration(log.timeSpent)}</span>
           <Button size="icon" variant="ghost" onClick={() => setEditing(log)} title="Edit worklog"><Pencil className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => remove.mutate(log.id)} disabled={remove.isPending} title="Delete worklog"><Trash2 className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => window.confirm('Delete worklog? This recalculates the remaining estimate.') && remove.mutate(log.id)} disabled={remove.isPending} title="Delete worklog"><Trash2 className="h-4 w-4" /></Button>
         </div>
       </div>
     </div>)}

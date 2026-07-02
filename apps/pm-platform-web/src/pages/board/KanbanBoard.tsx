@@ -136,7 +136,7 @@ export function KanbanBoard() {
     onError: (error, _vars, context) => {
       for (const [key, value] of context?.snapshots ?? []) qc.setQueryData(key, value);
       if (context?.previousProject) qc.setQueryData(queryKeys.project(projectId), context.previousProject);
-      setTransitionError(error instanceof Error ? error.message : 'Could not move issue.');
+      setTransitionError(`Cannot move issue: ${error instanceof Error ? error.message : 'the transition was rejected.'}`);
     },
     onSettled: () => {
       window.setTimeout(() => setMovingIssueId(null), 250);

@@ -56,7 +56,7 @@ export function BacklogPage() {
               <option value="">Choose sprint</option>
               {draftOrActive.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.status})</option>)}
             </select>
-            <Button onClick={() => moveToSprint.mutate()} disabled={!targetSprintId || moveToSprint.isPending}><MoveRight className="h-4 w-4" /> Move to sprint</Button>
+            <Button onClick={() => targetSprintId ? moveToSprint.mutate() : alert('Choose a sprint before moving issues')} disabled={!targetSprintId || moveToSprint.isPending}><MoveRight className="h-4 w-4" /> Move to sprint</Button>
             <Button variant="ghost" onClick={() => setSelected([])}>Clear</Button>
           </CardContent>
         </Card>

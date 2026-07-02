@@ -36,7 +36,7 @@ export function LiveTimer({ issueId }: { issueId: string }) {
       {timer && <Button variant="destructive" onClick={handleStop} disabled={stop.isPending}><Square className="h-4 w-4" />Stop & save</Button>}
     </div>
     {timer && <p className="mt-3 text-xs text-muted-foreground">Status: {timer.status}. Stopping creates a worklog and recalculates remaining estimate.</p>}
-    {!timer && <p className="mt-3 text-xs text-muted-foreground">Start a timer or use Log work for manual entry.</p>}
+    {!timer && <p className="mt-3 text-xs text-muted-foreground">Start a timer or use Log work for manual entry. Timer action failed messages will appear if the server rejects the action.</p>}
     <Dialog open={manualOpen} onOpenChange={setManualOpen}>
       <DialogContent>
         <DialogHeader><DialogTitle>Log work</DialogTitle></DialogHeader>

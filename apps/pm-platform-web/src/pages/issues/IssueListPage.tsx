@@ -100,7 +100,7 @@ export function IssueListPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={() => setFilters(emptyFilters)}>Clear filters</Button>
             <Input className="w-64" placeholder="Saved filter name" value={filterName} onChange={(e) => setFilterName(e.target.value)} />
-            <Button onClick={() => saveFilter.mutate()} disabled={saveFilter.isPending}><Save className="mr-1 h-4 w-4" /> Save filter</Button>
+            <Button onClick={() => filterName.trim() ? saveFilter.mutate() : alert('Filter name is required')} disabled={saveFilter.isPending}><Save className="mr-1 h-4 w-4" /> Save filter</Button>
           </div>
 
           {!!((savedFilters.data as any[]) ?? []).length && (
@@ -123,7 +123,7 @@ export function IssueListPage() {
             <select className="h-9 rounded-md border bg-background px-2 text-sm" onChange={(e) => e.target.value && bulk.mutate({ action: 'PRIORITY', value: e.target.value })} defaultValue=""><option value="">Set priority</option>{priorities.filter(Boolean).map((p) => <option key={p} value={p}>{p}</option>)}</select>
             <select className="h-9 rounded-md border bg-background px-2 text-sm" onChange={(e) => e.target.value && bulk.mutate({ action: 'STATUS', value: e.target.value })} defaultValue=""><option value="">Move status</option>{statuses.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
             <select className="h-9 rounded-md border bg-background px-2 text-sm" onChange={(e) => e.target.value && bulk.mutate({ action: 'ASSIGN', value: e.target.value })} defaultValue=""><option value="">Assign</option>{memberRows.map((u: any) => <option key={u.id} value={u.id}>{u.name ?? u.email}</option>)}</select>
-            <Button variant="outline" onClick={() => { const label = prompt('Label(s), comma separated'); if (label) bulk.mutate({ action: 'LABEL', value: label }); }}>Apply label</Button>
+            <Button variant="outline" onClick={() => { const label = prompt('Label(s), comma separated'); if (label) bulk.mutate({ action: 'LABEL', value: label }); else alert('Label is required'); }}>Apply label</Button>
             <Button variant="destructive" onClick={() => confirm('Delete selected issues?') && bulk.mutate({ action: 'DELETE' })}>Delete</Button>
             <Button variant="ghost" onClick={() => setSelected([])}>Clear</Button>
           </CardContent>
