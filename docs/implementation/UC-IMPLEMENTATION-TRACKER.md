@@ -625,3 +625,37 @@ Smoke evidence:
 - Page version verification passed
 - Restore from previous version succeeded
 - Restore verification passed
+
+## Checkpoint — UC-56 to UC-64 Docs Advanced Completion
+
+Date: 2026-07-01
+
+Status:
+
+- UC-56 Restrict page access: DONE
+- UC-57 Use page template: DONE
+- UC-58 Embed Jira issue in page: DONE
+- UC-59 Inline comment on page: DONE
+- UC-60 Export page to PDF: DONE
+- UC-61 Export page to Word baseline: DONE
+- UC-62 Share page publicly: DONE
+- UC-63 Search across docs: DONE
+- UC-64 View space analytics: DONE
+
+Verified through:
+
+- scripts/smoke-uc56-64-docs-advanced.sh
+
+Smoke evidence:
+
+- Page restriction created successfully
+- Named allowed user could view restricted page
+- Other viewer was blocked with 403
+- Template pages created successfully
+- Existing issue embedded into page
+- Inline page comment created and resolved
+- PDF export returned downloadable file
+- Word export returned downloadable file
+- Public share token persisted and opened without auth
+- Docs search returned the created page
+- Space analytics returned pages/comments/versions counts

@@ -2,6 +2,8 @@ import { api, unwrap } from './client';
 import type { Space, SpaceMember } from '@/types';
 
 export const spacesApi = {
+  analytics: (spaceId: string) => api.get(`/spaces/${spaceId}/analytics`).then(unwrap<any>),
+  templates: () => api.get('/spaces/templates').then(unwrap<any[]>),
   list: () => api.get('/spaces').then(unwrap<Space[]>),
   create: (body: Partial<Space>) => api.post('/spaces', body).then(unwrap<Space>),
   get: (spaceId: string) => api.get(`/spaces/${spaceId}`).then(unwrap<Space>),

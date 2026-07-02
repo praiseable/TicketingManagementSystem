@@ -121,8 +121,8 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 ### Phase 2 Current Result
 
 Completed so far: UC-25 to UC-50  
-Completed so far: UC-51 to UC-55
-Next block: UC-56 to UC-64
+Completed so far: UC-51 to UC-64
+Next block: UC-65 to UC-73
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -137,15 +137,15 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 | UC-53 | Edit page rich text | DONE | scripts/smoke-uc51-55-docs.sh |
 | UC-54 | Collaborative editing baseline | DONE | scripts/smoke-uc51-55-docs.sh |
 | UC-55 | Page versioning | DONE | scripts/smoke-uc51-55-docs.sh |
-| UC-56 | Restrict page access | PLANNED | Phase 3 |
-| UC-57 | Use page template | PLANNED | Phase 3 |
-| UC-58 | Embed Jira issue in page | PLANNED | Phase 3 |
-| UC-59 | Inline comment on page | PLANNED | Phase 3 |
-| UC-60 | Export page to PDF | PLANNED | Phase 3 |
-| UC-61 | Export page to Word | PLANNED | Phase 3 |
-| UC-62 | Share page publicly | PLANNED | Phase 3 |
-| UC-63 | Search across docs | PLANNED | Phase 3 |
-| UC-64 | View space analytics | PLANNED | Phase 3 |
+| UC-56 | Restrict page access | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-57 | Use page template | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-58 | Embed Jira issue in page | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-59 | Inline comment on page | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-60 | Export page to PDF | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-61 | Export page to Word baseline | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-62 | Share page publicly | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-63 | Search across docs | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
+| UC-64 | View space analytics | DONE | scripts/smoke-uc56-64-docs-advanced.sh |
 | UC-65 | Load test 500 users | FUTURE | Phase 3 hardening |
 | UC-66 | Query with JQL | FUTURE | Phase 3 |
 | UC-67 | JQL autocomplete | FUTURE | Phase 3 |

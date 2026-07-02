@@ -1,4 +1,5 @@
 import { prisma, SpaceRole } from '@pm-platform/db';
+import { pageService } from '../services/page.service.js';
 import { asyncHandler, created, noContent, ok, AppError } from '../utils/apiResponse.js';
 
 async function requireSpaceOwner(spaceId: string, userId: string) {
@@ -9,13 +10,11 @@ async function requireSpaceOwner(spaceId: string, userId: string) {
 }
 
 export const spacesController = {
+  templates: asyncHandler(async (_req, res) => ok(res, pageService.templates())),
+
   list: asyncHandler(async (req, res) => {
     const spaces = await prisma.space.findMany({
-      where: {
-        orgId: req.user!.orgId,
-        isArchived: false,
-        members: { some: { userId: req.user!.id } }
-      },
+      where: { orgId: req.user!.orgId, isArchived: false, members: { some: { userId: req.user!.id } } },
       orderBy: { updatedAt: 'desc' },
       include: {
         owner: { select: { id: true, name: true, email: true } },
@@ -49,16 +48,7 @@ export const spacesController = {
     });
 
     await prisma.auditLog.create({
-      data: {
-        orgId: req.user!.orgId,
-        userId: req.user!.id,
-        action: 'space.create',
-        entityType: 'space',
-        entityId: space.id,
-        newData: { name: space.name, key: space.key, type: space.type },
-        ipAddress: req.ip,
-        userAgent: req.headers['user-agent'] ?? null
-      }
+      data: { orgId: req.user!.orgId, userId: req.user!.id, action: 'space.create', entityType: 'space', entityId: space.id, newData: { name: space.name, key: space.key, type: space.type }, ipAddress: req.ip, userAgent: req.headers['user-agent'] ?? null }
     });
 
     created(res, space);
@@ -66,17 +56,8 @@ export const spacesController = {
 
   get: asyncHandler(async (req, res) => {
     const space = await prisma.space.findFirst({
-      where: {
-        id: req.params.spaceId,
-        orgId: req.user!.orgId,
-        isArchived: false,
-        members: { some: { userId: req.user!.id } }
-      },
-      include: {
-        owner: { select: { id: true, name: true, email: true } },
-        members: { include: { user: { select: { id: true, name: true, email: true } } } },
-        _count: { select: { pages: true } }
-      }
+      where: { id: req.params.spaceId, orgId: req.user!.orgId, isArchived: false, members: { some: { userId: req.user!.id } } },
+      include: { owner: { select: { id: true, name: true, email: true } }, members: { include: { user: { select: { id: true, name: true, email: true } } } }, _count: { select: { pages: true } } }
     });
 
     if (!space) throw new AppError(404, 'SPACE_NOT_FOUND', 'Space not found');
@@ -85,45 +66,24 @@ export const spacesController = {
 
   update: asyncHandler(async (req, res) => {
     await requireSpaceOwner(req.params.spaceId, req.user!.id);
-
-    const space = await prisma.space.update({
-      where: { id: req.params.spaceId },
-      data: {
-        name: req.body.name,
-        description: req.body.description,
-        iconUrl: req.body.iconUrl,
-        isArchived: req.body.isArchived
-      }
-    });
-
-    ok(res, space);
+    ok(res, await prisma.space.update({ where: { id: req.params.spaceId }, data: { name: req.body.name, description: req.body.description, iconUrl: req.body.iconUrl, isArchived: req.body.isArchived } }));
   }),
 
-  remove: asyncHandler(async (req, res) => {
-    await requireSpaceOwner(req.params.spaceId, req.user!.id);
-    await prisma.space.update({ where: { id: req.params.spaceId }, data: { isArchived: true } });
-    noContent(res);
-  }),
+  remove: asyncHandler(async (req, res) => { await requireSpaceOwner(req.params.spaceId, req.user!.id); await prisma.space.update({ where: { id: req.params.spaceId }, data: { isArchived: true } }); noContent(res); }),
 
   members: asyncHandler(async (req, res) => {
     const space = await prisma.space.findFirst({ where: { id: req.params.spaceId, members: { some: { userId: req.user!.id } } } });
     if (!space) throw new AppError(404, 'SPACE_NOT_FOUND', 'Space not found');
 
-    ok(res, await prisma.spaceMember.findMany({
-      where: { spaceId: req.params.spaceId },
-      include: { user: { select: { id: true, name: true, email: true } } },
-      orderBy: { createdAt: 'asc' }
-    }));
+    ok(res, await prisma.spaceMember.findMany({ where: { spaceId: req.params.spaceId }, include: { user: { select: { id: true, name: true, email: true } } }, orderBy: { createdAt: 'asc' } }));
   }),
 
   addMember: asyncHandler(async (req, res) => {
     await requireSpaceOwner(req.params.spaceId, req.user!.id);
-
     const user = await prisma.user.findFirst({ where: { orgId: req.user!.orgId, email: String(req.body.email).toLowerCase(), isActive: true } });
     if (!user) throw new AppError(404, 'USER_NOT_FOUND', 'User not found in organization');
 
     const role = (req.body.role ?? SpaceRole.VIEWER) as SpaceRole;
-
     const member = await prisma.spaceMember.upsert({
       where: { spaceId_userId: { spaceId: req.params.spaceId, userId: user.id } },
       create: { spaceId: req.params.spaceId, userId: user.id, role },
@@ -136,12 +96,7 @@ export const spacesController = {
 
   updateMember: asyncHandler(async (req, res) => {
     await requireSpaceOwner(req.params.spaceId, req.user!.id);
-    const role = req.body.role as SpaceRole;
-    ok(res, await prisma.spaceMember.update({
-      where: { id: req.params.memberId },
-      data: { role },
-      include: { user: { select: { id: true, name: true, email: true } } }
-    }));
+    ok(res, await prisma.spaceMember.update({ where: { id: req.params.memberId }, data: { role: req.body.role as SpaceRole }, include: { user: { select: { id: true, name: true, email: true } } } }));
   }),
 
   removeMember: asyncHandler(async (req, res) => {
