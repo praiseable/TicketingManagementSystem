@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Filter, Save, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, LayoutGrid, ListTree, Save, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/issues/StatusBadge';
 import { PriorityBadge } from '@/components/issues/PriorityBadge';
+import { IssueCard } from '@/components/issues/IssueCard';
 import { useIssues } from '@/hooks/useIssues';
 import { issuesApi } from '@/api/issues.api';
 import { projectsApi } from '@/api/projects.api';
 import { searchApi } from '@/api/search.api';
+import type { Issue } from '@/types';
 
 const priorities = ['', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE'];
 
@@ -26,16 +28,63 @@ type Filters = {
   createdTo: string;
 };
 
-const emptyFilters: Filters = {
-  search: '', status: '', type: '', assignee: '', priority: '', label: '', createdFrom: '', createdTo: ''
-};
+type ViewMode = 'cards' | 'list';
+
+const emptyFilters: Filters = { search: '', status: '', type: '', assignee: '', priority: '', label: '', createdFrom: '', createdTo: '' };
 
 function cleanFilters(filters: Filters): Record<string, unknown> {
   const params: Record<string, unknown> = { page: 1, limit: 500 };
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) params[key] = value;
-  }
+  for (const [key, value] of Object.entries(filters)) if (value) params[key] = value;
   return params;
+}
+
+function labelsOf(issue: any) {
+  return (issue.labels ?? []).map((x: any) => x.label ?? x).filter(Boolean);
+}
+
+function hasKnownChildren(issue: any) {
+  return Boolean((issue.children ?? []).length || issue._count?.children);
+}
+
+function SubtaskRows({ projectId, issue, expanded }: { projectId: string; issue: Issue; expanded: boolean }) {
+  const detail = useQuery({
+    queryKey: ['issue-detail-for-subtasks', projectId, issue.id],
+    queryFn: () => issuesApi.get(projectId, issue.id),
+    enabled: expanded,
+  });
+
+  if (!expanded) return null;
+
+  const children = (detail.data?.children ?? issue.children ?? []) as Issue[];
+
+  return (
+    <tr className="bg-muted/20">
+      <td colSpan={10} className="p-0">
+        <div className="border-t px-12 py-3">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sub-tasks</div>
+          {detail.isLoading && <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">Loading sub-tasks…</div>}
+          {!detail.isLoading && !children.length && <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">No sub-tasks found for this issue.</div>}
+          <div className="space-y-2">
+            {children.map((child) => (
+              <Link key={child.id} to={`/projects/${projectId}/issues/${child.id}`} className="flex items-center justify-between gap-3 rounded-md border bg-background p-3 text-sm hover:bg-accent">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-muted-foreground">{child.key}</span>
+                    <span className="truncate font-medium">{child.title}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">Assignee: {child.assignee?.name ?? child.assignee?.email ?? 'Unassigned'}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={child.workflowStatus} />
+                  <PriorityBadge priority={child.priority} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </td>
+    </tr>
+  );
 }
 
 export function IssueListPage() {
@@ -44,6 +93,8 @@ export function IssueListPage() {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [selected, setSelected] = useState<string[]>([]);
   const [filterName, setFilterName] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const params = useMemo(() => cleanFilters(filters), [filters]);
 
   const { data, isLoading } = useIssues(id, params);
@@ -54,33 +105,41 @@ export function IssueListPage() {
   const issues = data?.data ?? [];
   const statuses = ((workflows.data as any[]) ?? []).flatMap((wf: any) => wf.statuses ?? []);
   const memberRows = ((members.data as any[]) ?? []).map((m: any) => ({ role: m.role, ...(m.user ?? m) }));
+  const parentIds = new Set(issues.map((issue: any) => issue.id));
+  const visibleIssues = issues.filter((issue: any) => !issue.parentId || !parentIds.has(issue.parentId));
 
   const bulk = useMutation({
     mutationFn: (body: { action: string; value?: unknown }) => issuesApi.bulk(id, { issueIds: selected, ...body }),
-    onSuccess: () => { setSelected([]); qc.invalidateQueries({ queryKey: ['issues'] }); }
+    onSuccess: () => { setSelected([]); qc.invalidateQueries({ queryKey: ['issues'] }); },
   });
 
   const saveFilter = useMutation({
     mutationFn: () => searchApi.saveFilter({ name: filterName || `Filter ${new Date().toLocaleString()}`, projectId: id, filters: params }),
-    onSuccess: () => { setFilterName(''); qc.invalidateQueries({ queryKey: ['saved-filters', id] }); }
+    onSuccess: () => { setFilterName(''); qc.invalidateQueries({ queryKey: ['saved-filters', id] }); },
   });
 
   const deleteFilter = useMutation({
     mutationFn: (filterId: string) => searchApi.deleteFilter(filterId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['saved-filters', id] })
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['saved-filters', id] }),
   });
 
   const setFilter = (key: keyof Filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
-  const selectedAll = issues.length > 0 && selected.length === issues.length;
+  const selectedAll = visibleIssues.length > 0 && selected.length === visibleIssues.length;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">Issues</h1>
-          <p className="text-sm text-muted-foreground">Filter issues by type, status, assignee, priority, label, date range, and saved views.</p>
+          <p className="text-sm text-muted-foreground">Switch between card view and Jira-style task list. Use the + button to expand sub-tasks.</p>
         </div>
-        <Badge variant="outline">{data?.meta?.total ?? issues.length} results</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">{data?.meta?.total ?? issues.length} results</Badge>
+          <div className="inline-flex overflow-hidden rounded-md border">
+            <Button type="button" variant={viewMode === 'cards' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('cards')}><LayoutGrid className="mr-1 h-4 w-4" /> Card view</Button>
+            <Button type="button" variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')}><ListTree className="mr-1 h-4 w-4" /> List view</Button>
+          </div>
+        </div>
       </div>
 
       <Card>
@@ -100,7 +159,7 @@ export function IssueListPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={() => setFilters(emptyFilters)}>Clear filters</Button>
             <Input className="w-64" placeholder="Saved filter name" value={filterName} onChange={(e) => setFilterName(e.target.value)} />
-            <Button onClick={() => filterName.trim() ? saveFilter.mutate() : alert('Filter name is required')} disabled={saveFilter.isPending}><Save className="mr-1 h-4 w-4" /> Save filter</Button>
+            <Button onClick={() => saveFilter.mutate()} disabled={saveFilter.isPending}><Save className="mr-1 h-4 w-4" /> Save filter</Button>
           </div>
 
           {!!((savedFilters.data as any[]) ?? []).length && (
@@ -108,7 +167,7 @@ export function IssueListPage() {
               {((savedFilters.data as any[]) ?? []).map((sf: any) => (
                 <span key={sf.id} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm">
                   <button type="button" onClick={() => setFilters({ ...emptyFilters, ...(sf.filters ?? {}) })}>{sf.name}</button>
-                  <button type="button" className="text-destructive" onClick={() => deleteFilter.mutate(sf.id)}><Trash2 className="h-3 w-3" /></button>
+                  <button type="button" className="text-destructive" onClick={() => window.confirm('Delete saved filter?') && deleteFilter.mutate(sf.id)}><Trash2 className="h-3 w-3" /></button>
                 </span>
               ))}
             </div>
@@ -123,35 +182,53 @@ export function IssueListPage() {
             <select className="h-9 rounded-md border bg-background px-2 text-sm" onChange={(e) => e.target.value && bulk.mutate({ action: 'PRIORITY', value: e.target.value })} defaultValue=""><option value="">Set priority</option>{priorities.filter(Boolean).map((p) => <option key={p} value={p}>{p}</option>)}</select>
             <select className="h-9 rounded-md border bg-background px-2 text-sm" onChange={(e) => e.target.value && bulk.mutate({ action: 'STATUS', value: e.target.value })} defaultValue=""><option value="">Move status</option>{statuses.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
             <select className="h-9 rounded-md border bg-background px-2 text-sm" onChange={(e) => e.target.value && bulk.mutate({ action: 'ASSIGN', value: e.target.value })} defaultValue=""><option value="">Assign</option>{memberRows.map((u: any) => <option key={u.id} value={u.id}>{u.name ?? u.email}</option>)}</select>
-            <Button variant="outline" onClick={() => { const label = prompt('Label(s), comma separated'); if (label) bulk.mutate({ action: 'LABEL', value: label }); else alert('Label is required'); }}>Apply label</Button>
-            <Button variant="destructive" onClick={() => confirm('Delete selected issues?') && bulk.mutate({ action: 'DELETE' })}>Delete</Button>
+            <Button variant="outline" onClick={() => { const label = window.prompt('Label(s), comma separated'); if (label) bulk.mutate({ action: 'LABEL', value: label }); }}>Apply label</Button>
+            <Button variant="destructive" onClick={() => window.confirm('Delete selected issues?') && bulk.mutate({ action: 'DELETE' })}>Delete</Button>
             <Button variant="ghost" onClick={() => setSelected([])}>Clear</Button>
           </CardContent>
         </Card>
       )}
 
-      <div className="overflow-hidden rounded-lg border">
-        <table className="w-full text-sm">
-          <thead><tr className="border-b bg-muted/40"><th className="p-3"><input type="checkbox" checked={selectedAll} onChange={(e) => setSelected(e.target.checked ? issues.map((i: any) => i.id) : [])} /></th><th className="p-3 text-left">Key</th><th className="p-3 text-left">Title</th><th className="p-3 text-left">Type</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Priority</th><th className="p-3 text-left">Points</th><th className="p-3 text-left">Assignee</th><th className="p-3 text-left">Labels</th></tr></thead>
-          <tbody>
-            {isLoading && <tr><td className="p-6 text-center text-muted-foreground" colSpan={9}>Loading issues…</td></tr>}
-            {!isLoading && !issues.length && <tr><td className="p-6 text-center text-muted-foreground" colSpan={9}>No issues match the selected filters.</td></tr>}
-            {issues.map((issue: any) => (
-              <tr key={issue.id} className="border-b hover:bg-muted/40">
-                <td className="p-3"><input type="checkbox" checked={selected.includes(issue.id)} onChange={(e) => setSelected((s) => e.target.checked ? [...s, issue.id] : s.filter((x) => x !== issue.id))} /></td>
-                <td className="p-3 font-medium"><Link to={`/projects/${id}/issues/${issue.id}`}>{issue.key}</Link></td>
-                <td className="p-3">{issue.title}</td>
-                <td className="p-3">{issue.issueType?.name}</td>
-                <td className="p-3"><StatusBadge status={issue.workflowStatus} /></td>
-                <td className="p-3"><PriorityBadge priority={issue.priority} /></td>
-                <td className="p-3">{issue.storyPoints ?? 0}</td>
-                <td className="p-3">{issue.assignee?.name ?? issue.assignee?.email ?? 'Unassigned'}</td>
-                <td className="p-3"><div className="flex flex-wrap gap-1">{(issue.labels ?? []).map((x: any) => <Badge key={x.label?.id ?? x.id} variant="outline">{x.label?.name ?? x.name}</Badge>)}</div></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {viewMode === 'cards' ? (
+        <div>
+          {isLoading && <div className="rounded-lg border p-6 text-center text-muted-foreground">Loading issues…</div>}
+          {!isLoading && !visibleIssues.length && <div className="rounded-lg border p-6 text-center text-muted-foreground">No issues match the selected filters.</div>}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {visibleIssues.map((issue: Issue) => <IssueCard key={issue.id} issue={issue} />)}
+          </div>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-lg border">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b bg-muted/40"><th className="w-10 p-3 text-left">+</th><th className="p-3"><input type="checkbox" checked={selectedAll} onChange={(e) => setSelected(e.target.checked ? visibleIssues.map((i: any) => i.id) : [])} /></th><th className="p-3 text-left">Key</th><th className="p-3 text-left">Title</th><th className="p-3 text-left">Type</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Priority</th><th className="p-3 text-left">Points</th><th className="p-3 text-left">Assignee</th><th className="p-3 text-left">Labels</th></tr></thead>
+            <tbody>
+              {isLoading && <tr><td className="p-6 text-center text-muted-foreground" colSpan={10}>Loading issues…</td></tr>}
+              {!isLoading && !visibleIssues.length && <tr><td className="p-6 text-center text-muted-foreground" colSpan={10}>No issues match the selected filters.</td></tr>}
+              {visibleIssues.map((issue: any) => (
+                <>
+                  <tr key={issue.id} className="border-b hover:bg-muted/40">
+                    <td className="p-3">
+                      <Button type="button" size="icon" variant="ghost" className="h-7 w-7" title={expanded[issue.id] ? 'Hide sub-tasks' : 'Show sub-tasks'} onClick={() => setExpanded((current) => ({ ...current, [issue.id]: !current[issue.id] }))}>
+                        {expanded[issue.id] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      </Button>
+                    </td>
+                    <td className="p-3"><input type="checkbox" checked={selected.includes(issue.id)} onChange={(e) => setSelected((s) => e.target.checked ? [...s, issue.id] : s.filter((x) => x !== issue.id))} /></td>
+                    <td className="p-3 font-medium"><Link to={`/projects/${id}/issues/${issue.id}`}>{issue.key}</Link></td>
+                    <td className="p-3"><Link to={`/projects/${id}/issues/${issue.id}`} className="hover:text-primary hover:underline">{issue.title}</Link>{hasKnownChildren(issue) && <Badge variant="outline" className="ml-2">{issue._count?.children ?? issue.children?.length} sub</Badge>}</td>
+                    <td className="p-3">{issue.issueType?.name}</td>
+                    <td className="p-3"><StatusBadge status={issue.workflowStatus} /></td>
+                    <td className="p-3"><PriorityBadge priority={issue.priority} /></td>
+                    <td className="p-3">{issue.storyPoints ?? 0}</td>
+                    <td className="p-3">{issue.assignee?.name ?? issue.assignee?.email ?? 'Unassigned'}</td>
+                    <td className="p-3"><div className="flex flex-wrap gap-1">{labelsOf(issue).map((label: any) => <Badge key={label.id} variant="outline">{label.name}</Badge>)}</div></td>
+                  </tr>
+                  <SubtaskRows projectId={id} issue={issue} expanded={Boolean(expanded[issue.id])} />
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,14 +6,7 @@ import { IssueCard } from '@/components/issues/IssueCard';
 import type { Issue } from '@/types';
 
 export function BoardCard({ issue }: { issue: Issue }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: issue.id,
     data: { issue },
   });

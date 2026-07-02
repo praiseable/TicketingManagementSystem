@@ -77,3 +77,4 @@ Thumbs.db
 *.swp
 .hotfix-*/
 /FEATURE_PACK_*.md
+.ui-quality-pack-*/
