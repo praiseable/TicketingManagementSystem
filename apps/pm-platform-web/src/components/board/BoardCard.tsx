@@ -1,17 +1,27 @@
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
+import { GripVertical } from 'lucide-react';
 import { IssueCard } from '@/components/issues/IssueCard';
 import type { Issue } from '@/types';
 
 export function BoardCard({ issue }: { issue: Issue }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: issue.id, data: { issue } });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: issue.id,
+    data: { issue },
+  });
+
   return (
     <motion.div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      {...attributes}
-      {...listeners}
       layout
       initial={{ opacity: 0, y: -12, scale: 0.98 }}
       animate={{ opacity: isDragging ? 0.45 : 1, y: 0, scale: 1 }}
@@ -20,8 +30,19 @@ export function BoardCard({ issue }: { issue: Issue }) {
       whileTap={{ scale: 0.98 }}
       whileDrag={{ scale: 1.05, rotate: 1.5, boxShadow: '0 26px 60px rgba(15,23,42,0.25)' }}
       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-      className={isDragging ? 'z-50 cursor-grabbing' : 'cursor-grab'}
+      className={isDragging ? 'relative z-50' : 'relative'}
     >
+      <button
+        type="button"
+        aria-label={`Drag ${issue.key}`}
+        title="Drag card"
+        {...attributes}
+        {...listeners}
+        className="absolute left-2 top-2 z-20 inline-flex h-7 w-7 cursor-grab items-center justify-center rounded-md border bg-background/90 text-muted-foreground shadow-sm transition hover:bg-muted active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+
       <IssueCard issue={issue} />
     </motion.div>
   );
@@ -39,4 +60,3 @@ export function BoardCardPreview({ issue }: { issue: Issue }) {
     </motion.div>
   );
 }
-

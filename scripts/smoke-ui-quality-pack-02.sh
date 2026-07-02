@@ -23,3 +23,9 @@ check_text apps/pm-platform-web/src/pages/backlog/BacklogPage.tsx "Choose a spri
 check_text apps/pm-platform-web/src/pages/sprints/SprintsPage.tsx "Sprint name is required|Complete sprint\?"
 check_text docs/test-cases/UI_QUALITY_PACK_02_TEST_CASES.md "UI02-ID-01|UI02-SP-02|UI02-TM-03"
 echo "UI Quality Pack 02 static checks passed"
+
+grep -q "Open task details" apps/pm-platform-web/src/components/issues/IssueCard.tsx
+grep -q "Drag card" apps/pm-platform-web/src/components/board/BoardCard.tsx
+grep -q "to={detailPath}" apps/pm-platform-web/src/components/issues/IssueCard.tsx
+
+echo "ui_pack_02_card_click_details=true"
