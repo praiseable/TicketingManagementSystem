@@ -6,15 +6,42 @@ import { emitToProject } from '../sockets/index.js';
 const userSummary = { select: { id: true, email: true, name: true, avatarUrl: true } };
 
 async function notifyMentions(body: string, commentId: string) {
-  const emails = [...body.matchAll(/@([\w.+-]+@[\w.-]+)/g)].map((m) => m[1]);
+  const emails = Array.from(
+    new Set([...body.matchAll(/@([\w.+-]+@[\w.-]+)/g)].map((m) => m[1].toLowerCase()))
+  );
+
   for (const email of emails) {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      await prisma.mention.upsert({ where: { commentId_userId: { commentId, userId: user.id } } as any, update: {}, create: { commentId, userId: user.id } }).catch(async () => {
-        await prisma.mention.create({ data: { commentId, userId: user.id } }).catch(() => undefined);
+
+    if (!user) continue;
+
+    const existing = await prisma.mention.findFirst({
+      where: {
+        commentId,
+        userId: user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!existing) {
+      await prisma.mention.create({
+        data: {
+          commentId,
+          userId: user.id,
+        },
       });
-      await notificationService.notify(user.id, NotificationType.ISSUE_MENTIONED, 'You were mentioned', body.slice(0, 140), 'comment', commentId);
     }
+
+    await notificationService.notify(
+      user.id,
+      NotificationType.ISSUE_MENTIONED,
+      'You were mentioned',
+      body.slice(0, 140),
+      'comment',
+      commentId
+    );
   }
 }
 
