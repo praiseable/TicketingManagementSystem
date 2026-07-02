@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
+import { ssoController } from '../controllers/sso.controller.js';
 import { authRateLimiter } from '../middleware/rateLimiter.js';
 import { authRequired } from '../middleware/auth.js';
+import { requireAtLeast } from '../middleware/requireRole.js';
 import { validate } from '../middleware/validate.js';
 import { authSchemas } from '../schemas/index.js';
 
@@ -14,4 +16,8 @@ router.post('/forgot-password', validate({ body: authSchemas.forgotPassword }), 
 router.post('/reset-password', validate({ body: authSchemas.resetPassword }), authController.resetPassword);
 router.post('/verify-email', validate({ body: authSchemas.verifyEmail }), authController.verifyEmail);
 router.get('/me', authRequired, authController.me);
+router.get('/sso/config', authRequired, requireAtLeast('ADMIN'), ssoController.getConfig);
+router.put('/sso/config', authRequired, requireAtLeast('ADMIN'), ssoController.updateConfig);
+router.get('/sso/login-url', ssoController.loginUrl);
+router.post('/sso/callback', ssoController.callback);
 export default router;

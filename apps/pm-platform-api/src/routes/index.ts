@@ -22,6 +22,8 @@ import adminRoutes from './admin.routes.js';
 import spacesRoutes from './spaces.routes.js';
 import pagesRoutes from './pages.routes.js';
 import analyticsRoutes from './analytics.routes.js';
+import permissionSchemesRoutes from './permissionSchemes.routes.js';
+import roadmapRoutes from './roadmap.routes.js';
 import { authRequired } from '../middleware/auth.js';
 import { pagesController } from '../controllers/pages.controller.js';
 
@@ -40,6 +42,8 @@ router.use('/projects/:projectId/workflows', workflowsRoutes);
 router.use('/projects/:projectId/sprints', sprintsRoutes);
 router.use('/projects/:projectId/backlog', backlogsRoutes);
 router.use('/projects/:projectId/webhooks', webhooksRoutes);
+router.use('/projects/:projectId/roadmap', roadmapRoutes);
+router.use('/projects/:projectId/permission-schemes', permissionSchemesRoutes);
 router.use('/projects/:projectId/github', githubRoutes);
 router.use('/issues/:issueId/comments', commentsRoutes);
 router.use('/issues/:issueId/attachments', attachmentsRoutes);

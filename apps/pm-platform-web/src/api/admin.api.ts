@@ -16,5 +16,10 @@ export const adminApi = {
   deactivateUser: (id: string) => api.patch(`/admin/users/${id}/deactivate`).then(unwrap<any>),
   changeUserRole: (id: string, role: string) => api.patch(`/admin/users/${id}/role`, { role }).then(unwrap<any>),
   resetUserPassword: (id: string, password?: string) => api.patch(`/admin/users/${id}/password`, password ? { password } : {}).then(unwrap<any>),
-  auditLog: (filters: AuditFilters = {}) => api.get('/admin/audit-log', { params: params(filters) }).then(unwrapWithMeta<any[]>)
+  auditLog: (filters: AuditFilters = {}) => api.get('/admin/audit-log', { params: params(filters) }).then(unwrapWithMeta<any[]>),
+  groups: () => api.get('/admin/groups').then(unwrap<any[]>),
+  createGroup: (body: Record<string, unknown>) => api.post('/admin/groups', body).then(unwrap<any>),
+  addGroupUser: (groupId: string, userId: string) => api.post(`/admin/groups/${groupId}/users`, { userId }).then(unwrap<any>),
+  removeGroupUser: (groupId: string, userId: string) => api.delete(`/admin/groups/${groupId}/users/${userId}`),
+  deleteGroup: (groupId: string) => api.delete(`/admin/groups/${groupId}`)
 };

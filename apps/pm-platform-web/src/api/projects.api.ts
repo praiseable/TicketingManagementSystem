@@ -35,5 +35,11 @@ export const projectsApi = {
   deleteWebhook: (id: string, webhookId: string) => api.delete(`/projects/${id}/webhooks/${webhookId}`),
   webhookDeliveries: (id: string, webhookId: string) => api.get(`/projects/${id}/webhooks/${webhookId}/deliveries`).then(unwrap<any[]>),
   testWebhook: (id: string, webhookId: string) => api.post(`/projects/${id}/webhooks/${webhookId}/test`).then(unwrap<any>),
+
+  permissionSchemes: (id: string) => api.get(`/projects/${id}/permission-schemes`).then(unwrap<any>),
+  createPermissionScheme: (id: string, body: Record<string, unknown>) => api.post(`/projects/${id}/permission-schemes`, body).then(unwrap<any>),
+  applyPermissionScheme: (id: string, schemeId: string) => api.post(`/projects/${id}/permission-schemes/${schemeId}/apply`).then(unwrap<any>),
+  roadmap: (id: string) => api.get(`/projects/${id}/roadmap`).then(unwrap<any>),
+  rescheduleRoadmapIssue: (id: string, issueId: string, body: { startDate: string; endDate: string }) => api.patch(`/projects/${id}/roadmap/issues/${issueId}/reschedule`, body).then(unwrap<any>),
   linkGithubCommit: (id: string, body: Record<string, unknown>) => api.post(`/projects/${id}/github/commits`, body).then(unwrap<any>)
 };

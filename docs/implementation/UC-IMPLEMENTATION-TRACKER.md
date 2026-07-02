@@ -683,3 +683,32 @@ Smoke evidence:
 - JQL autocomplete returned suggestions
 - AUTO_LABEL post-function created and applied during transition
 - AUTO_NOTIFY post-function created notification during transition
+
+## Checkpoint — UC-69 to UC-73 Final Phase 3 Completion
+
+Date: 2026-07-02
+
+Status:
+
+- UC-69 Create permission scheme: DONE
+- UC-70 Manage user groups: DONE
+- UC-71 View Gantt timeline: DONE
+- UC-72 Drag to reschedule: DONE
+- UC-73 SSO login foundation: DONE
+
+Verified through:
+
+- scripts/smoke-uc69-73-final-phase3.sh
+
+Smoke evidence:
+
+- Permission scheme created successfully
+- Permission scheme applied to project successfully
+- Permission scheme list returned active scheme
+- User group created successfully
+- User added to group successfully
+- User group list returned added user
+- Roadmap/Gantt timeline returned created issue
+- Reschedule endpoint updated roadmap schedule and issue due date
+- SSO config saved successfully
+- SSO login URL foundation returned redirect URL

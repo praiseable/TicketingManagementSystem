@@ -121,8 +121,8 @@ Phase 1 includes authentication, organisation/project management, issue tracking
 ### Phase 2 Current Result
 
 Completed so far: UC-25 to UC-50  
-Completed so far: UC-51 to UC-68
-Next block: UC-69 to UC-73
+Completed so far: UC-51 to UC-73
+Next block: All approved use cases complete
 
 Phase 2 currently includes sprint management, backlog management, story points, burndown, velocity, WIP limits, swimlanes, worklogs, and live timers.
 
@@ -150,11 +150,11 @@ Phase 2 currently includes sprint management, backlog management, story points, 
 | UC-66 | Query with JQL | DONE | scripts/smoke-uc65-68-load-jql-postfn.sh |
 | UC-67 | JQL autocomplete | DONE | scripts/smoke-uc65-68-load-jql-postfn.sh |
 | UC-68 | Workflow post-function | DONE | scripts/smoke-uc65-68-load-jql-postfn.sh |
-| UC-69 | Create permission scheme | FUTURE | Phase 3 |
-| UC-70 | Manage user groups | FUTURE | Phase 3 |
-| UC-71 | View Gantt timeline | FUTURE | Phase 3 |
-| UC-72 | Drag to reschedule | FUTURE | Phase 3 |
-| UC-73 | SSO login | FUTURE | Phase 3 |
+| UC-69 | Create permission scheme | DONE | scripts/smoke-uc69-73-final-phase3.sh |
+| UC-70 | Manage user groups | DONE | scripts/smoke-uc69-73-final-phase3.sh |
+| UC-71 | View Gantt timeline | DONE | scripts/smoke-uc69-73-final-phase3.sh |
+| UC-72 | Drag to reschedule | DONE | scripts/smoke-uc69-73-final-phase3.sh |
+| UC-73 | SSO login foundation | DONE | scripts/smoke-uc69-73-final-phase3.sh |
 
 ---
 
@@ -181,3 +181,8 @@ Phase 2: UC-25 to UC-50 COMPLETE
 Next: Phase 3 — Documentation, scale, JQL, Gantt, and SSO
 
 <!-- TMS_USE_CASE_STATUS_END -->
+
+
+## Final Implementation Milestone
+
+All approved use cases UC-01 to UC-73 are implemented and smoke-tested.
